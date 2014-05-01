@@ -1,0 +1,25 @@
+{
+    "name": "pavlinter/yii2-dot-translation",
+    "description": "Component that translate small texts",
+    "keywords": ["yii2", "translation", "dot", "component"],
+    "type": "yii2-extension",
+    "support": {
+        "issues": "https://github.com/pavlinter/yii2-dot-translation/issues?state=open",
+        "source": "https://github.com/pavlinter/yii2-dot-translation"
+    },
+    "authors": [
+        {
+            "name": "Pavels Radajevs",
+            "email": "pavlinter@gmail.com"
+        }
+    ],
+    "require": {
+        "yiisoft/yii2": "*",
+        "yiisoft/yii2-bootstrap": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "pavlinter\\": ""
+        }
+    }
+}
