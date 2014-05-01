@@ -1,8 +1,9 @@
 Yii2 Dot Trasnlation
 ======================
 
-![Screen Shot](https://github.com/pavlinter/yii2-dot-translation/blob/master/screenshot.png)
+![Screen Shot](https://github.com/pavlinter/yii2-dot-translation/blob/master/screenshot.png?raw=true)
 
+![Alt text](https://github.com/pavlinter/yii2-dot-translation/blob/master/screenshot.png?raw=true "Screenshot")
 
 Installation
 ------------
