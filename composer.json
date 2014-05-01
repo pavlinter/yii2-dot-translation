@@ -3,6 +3,7 @@
     "description": "Component that translate small texts",
     "keywords": ["yii2", "translation", "dot", "component"],
     "type": "yii2-extension",
+    "license": "BSD 3-Clause",
     "support": {
         "issues": "https://github.com/pavlinter/yii2-dot-translation/issues?state=open",
         "source": "https://github.com/pavlinter/yii2-dot-translation"
