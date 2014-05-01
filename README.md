@@ -82,6 +82,13 @@ public function actions()
 
 Usage
 -----
+
+Change language:
+```php
+/index.php?r=site/index&lang=ru
+```
+
+Example:
 ```php
 
 echo Yii::t('app', 'Hello world.'); //dotMode = true
