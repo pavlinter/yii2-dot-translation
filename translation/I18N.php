@@ -235,11 +235,12 @@ class I18N extends \yii\i18n\I18N
      */
     public function access()
     {
-        if (is_string($this->access)) {
+        if (is_string($this->access) && Yii::$app->getAuthManager()!==null) {
             return Yii::$app->getUser()->can($this->access);
         } elseif (is_callable($this->access)) {
             return call_user_func($this->access);
         }
+        return false;
     }
     /**
      * Register client side
