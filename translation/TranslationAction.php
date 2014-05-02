@@ -7,6 +7,7 @@ use yii\base\Action;
 use yii\base\InvalidConfigException;
 use yii\db\Query;
 use yii\helpers\Url;
+use yii\helpers\Html;
 use yii\web\Response;
 use yii\web\ForbiddenHttpException;
 
@@ -21,6 +22,14 @@ class TranslationAction extends Action
      * @var string the name of the translated message table.
      */
     public $messageTable = '{{%message}}';
+    /**
+ * @var boolean encode new message.
+ */
+    public $htmlEncode = true;
+    /**
+     * @var null|string|function.
+     */
+    public $access = null;
 
     /**
      * Initializes the action.
@@ -28,11 +37,13 @@ class TranslationAction extends Action
      */
     public function init()
     {
-        if (!Yii::$app->i18n->access()) {
-            throw new ForbiddenHttpException(Yii::t('yii', 'You are not allowed to perform this action.'));
+        if ($this->access === null) {
+            $this->access = Yii::$app->i18n->access;
         }
 
-
+        if (!Yii::$app->i18n->access($this->access)) {
+            throw new ForbiddenHttpException(Yii::t('yii', 'You are not allowed to perform this action.'));
+        }
     }
     /**
      * Runs the action.
@@ -46,7 +57,10 @@ class TranslationAction extends Action
 
         Yii::$app->response->format = Response::FORMAT_JSON;
 
+        $languages = Yii::$app->i18n->getLanguages();
+
         if (Yii::$app->request->isPost) {
+
 
             $category           = urldecode(Yii::$app->request->post('category'));
             $message            = urldecode(Yii::$app->request->post('message'));
@@ -58,7 +72,7 @@ class TranslationAction extends Action
                 'message'  => $message,
             ]);
 
-            $id = $query->createCommand()->queryScalar();
+            $id = $query->scalar();
             if ($id === false) {
                 Yii::$app->db->createCommand()->insert($this->sourceMessageTable, [
                     'category' => $category,
@@ -68,6 +82,14 @@ class TranslationAction extends Action
             }
 
             foreach ($translations as $lang => $value) {
+                if (!isset($languages[$lang])) {
+                    continue;
+                }
+
+                if ($this->htmlEncode) {
+                    $value = Html::encode($value);
+                }
+
                 $query = new Query();
                 $res = $query->from($this->messageTable)->where([
                             'id' => $id,
@@ -95,26 +117,22 @@ class TranslationAction extends Action
             $category   = urldecode(Yii::$app->request->get('category'));
             $message    = urldecode(Yii::$app->request->get('message'));
 
-          
-            $model = Yii::createObject(Yii::$app->i18n->langModel);
-            $query = $model::find();
-            $models = $query->andFilterWhere(Yii::$app->i18n->langFilter)->all();
             $json['fields'] = [];
-            foreach ($models as $lang) {
+            foreach ($languages as $code=>$language) {
                 $query = new Query();
                 $query->select("m.translation")->from($this->sourceMessageTable.' AS s')
                     ->innerJoin($this->messageTable.' AS m','m.id = s.id')
                     ->where([
-                        'm.language' => $lang[Yii::$app->i18n->langAttribute],
+                        'm.language' => $code,
                         's.category' => $category,
                         's.message'  => $message,
                     ]);
-                $translation    = $query->createCommand()->queryScalar();
+                $translation = $query->scalar();
                 if ($translation === false) {
                     $translation = '';
                 }
 
-                $json['fields']['#dot-translation-'.$lang[Yii::$app->i18n->langAttribute]] = $translation;
+                $json['fields']['#dot-translation-' . $code] = $translation;
 
             }
             return $json;

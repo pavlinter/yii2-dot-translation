@@ -54,13 +54,17 @@ Configuration
 
         //'dotClass' => 'dot-translation',
         //'dotSymbol' => '&bull;',
-        //'langModel' => 'pavlinter\translation\Languages',
-        //'langAttribute' => 'code', // field from languages table
-        //'langLabel' => 'name', // field from languages table
-        //'langFilter' => ['active' => 1], //$query->andFilterWhere(['active' => 1]);
+
+        //languages table
+        //'langTable' => '{{%languages}}',
+        //'langColCode' => 'code',
+        //'langColLabel' => 'name',
+        //'langColUpdatedAt' => 'updated_at', //string || null
+        //'langWhere' => ['active' => 1], //$query->where(['active' => 1]);
         //'langOrder' => 'weight', //$query->orderBy('weight');
-        //'enableCaching' => true, //langModel cache
-        //'durationCaching' => 0, //langModel cache
+
+        //'enableCaching' => true, //for langTable cache
+        //'durationCaching' => 0, //langTable cache
         //'router' => 'site/dot-translation', //'site' your controller
         //'langParam' => 'lang', // $_GET KEY
     ],
@@ -75,6 +79,8 @@ public function actions()
     return [
         'dot-translation' => [
             'class' => 'pavlinter\translation\TranslationAction',
+            //'htmlEncode' => true, //encode new message
+            //'access' => null, //default Yii::$app->i18n->access
         ],
         ...
     ];

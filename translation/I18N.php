@@ -18,30 +18,36 @@ use yii\caching\DbDependency;
 class I18N extends \yii\i18n\I18N
 {
 
-    public $dotMode         = true;
-    public $dotClass        = 'dot-translation';
-    public $dotSymbol       = '&bull;';
+    public $dotMode             = true;
+    public $dotClass            = 'dot-translation';
+    public $dotSymbol           = '&bull;';
 
-    public $langModel       = 'pavlinter\translation\Languages';
-    public $langAttribute   = 'code'; //language code ru,en ...
-    public $langLabel       = 'name';
-    public $langFilter      = ['active' => 1];
-    public $langOrder       = 'weight';
+    public $langTable           = '{{%languages}}';
+    public $langColCode         = 'code'; //language code ru,en ...
+    public $langColLabel        = 'name';
+    public $langColUpdatedAt    = 'updated_at';
 
-    public $enableCaching   = true;
-    public $durationCaching = 0;
+    public $langWhere           = ['active' => 1];
+    public $langOrder           = 'weight';
 
-    public $router          = 'site/dot-translation';
-    public $langParam       = 'lang'; // $_GET KEY
-    public $access          = 'dots-control';
+    public $enableCaching       = true;
+    public $durationCaching     = 0;
+
+    public $router              = 'site/dot-translation';
+    public $langParam           = 'lang'; // $_GET KEY
+    public $access              = 'dots-control';
 
     private $language           = null;
-    private $languageId         = 0;
+    private $languageId         = null;
     private $languages          = []; //list languages
     private $dot                = null;
     private $showDot            = false;
     private $beforeTranslate    = '';
     private $afterTranslate     = '';
+    /**
+     * @var boolean encode new message.
+     */
+    public $htmlEncode = true;
     /**
      * Initializes the component by configuring the default message categories.
      */
@@ -52,7 +58,7 @@ class I18N extends \yii\i18n\I18N
 
         $this->changeLanguage();
 
-        if ($this->access()) {
+        if ($this->access($this->access)) {
             $view = Yii::$app->getView();
             $this->registerAssets($view);
             $view->on(View::EVENT_END_BODY, function ($event) {
@@ -71,13 +77,13 @@ class I18N extends \yii\i18n\I18N
                     ]);
                         echo Html::hiddenInput('category', '', ['id' => 'dots-inp-category']);
                         echo Html::hiddenInput('message', '', ['id' => 'dots-inp-message']);
-                        foreach ($this->languages as $lang) {
+                        foreach ($this->languages as $code=>$language) {
 
                             echo Html::beginTag('div', ['class' => 'form-group']);
-                            echo Html::label($lang[$this->langLabel],'dot-translation-' . $lang[$this->langAttribute]);
-                            echo Html::textarea('translation[' . $lang[$this->langAttribute] . ']', '', [
+                            echo Html::label($language[$this->langColLabel],'dot-translation-' . $code);
+                            echo Html::textarea('translation[' . $code . ']', '', [
                                 'class' => 'form-control',
-                                'id' => 'dot-translation-' . $lang[$this->langAttribute]]);
+                                'id' => 'dot-translation-' . $code]);
                             echo Html::endTag('div');
                         }
                         echo Html::submitButton('Change', ['class' => 'btn btn-success', 'id' => 'dot-btn']);
@@ -95,32 +101,43 @@ class I18N extends \yii\i18n\I18N
      */
     public function changeLanguage()
     {
-        $model = Yii::createObject($this->langModel);
+
         $key = self::className().'Languages';
         $this->languages = Yii::$app->cache->get($key);
 
         if ($this->languages === false) {
 
-            $query = $model::find()->indexBy($this->langAttribute);
-            $query->andFilterWhere($this->langFilter);
+            $query = new Query();
+            $query->from($this->langTable)
+                ->where($this->langWhere)
+                ->orderBy($this->langOrder);
 
-            $cacheQuery = (new Query());
-            $cacheQuery->select('SUM(updated_at)')->from($model->tableName())->andFilterWhere($this->langFilter);
+            $this->languages = $query->indexBy($this->langColCode)->all();
 
-            if ($this->langOrder) {
-                $query->orderBy($this->langOrder);
-                $cacheQuery->orderBy($this->langOrder);
+            if ($this->languages===[]) {
+                $this->languages[$this->language] = [
+                    'id' => 0,
+                    $this->langColCode  => $this->language,
+                    $this->langColLabel => $this->language,
+                ];
             }
-            $this->languages = $query->asArray()->all();
-
 
             if ($this->enableCaching) {
+                if ($this->langColUpdatedAt) {
 
-                $command = $cacheQuery->createCommand();
-                Yii::$app->cache->set($key,$this->languages,$this->durationCaching,new DbDependency([
-                    'sql' => $command->getRawSql(),
-                ]));
+                    $query = new Query();
+                    $sql = $query->select('MAX(' . $this->langColUpdatedAt . ')')
+                        ->from($this->langTable)
+                        ->createCommand()
+                        ->getRawSql();
+                    Yii::$app->cache->set($key,$this->languages,$this->durationCaching,new DbDependency([
+                        'sql' => $sql,
+                    ]));
+                } else if ($this->durationCaching) {
+                    Yii::$app->cache->set($key,$this->languages,$this->durationCaching);
+                }
             }
+
         }
 
 
@@ -134,7 +151,7 @@ class I18N extends \yii\i18n\I18N
                 $language = reset($this->languages);
             }
 
-            Yii::$app->language = $this->language = $language[$this->langAttribute];
+            Yii::$app->language = $this->language = $language[$this->langColCode];
             $this->languageId   = $language['id'];
         }
 
@@ -187,7 +204,7 @@ class I18N extends \yii\i18n\I18N
         return $this->languages;
     }
     /**
-     * @return int language id from langModel
+     * @return int language id from language table
      */
     public function getId()
     {
@@ -233,12 +250,12 @@ class I18N extends \yii\i18n\I18N
      * User permissions
      * @return boolean
      */
-    public function access()
+    public function access($access)
     {
-        if (is_string($this->access) && Yii::$app->getAuthManager()!==null) {
-            return Yii::$app->getUser()->can($this->access);
-        } elseif (is_callable($this->access)) {
-            return call_user_func($this->access);
+        if (is_string($access) && Yii::$app->getAuthManager()!==null) {
+            return Yii::$app->getUser()->can($access);
+        } elseif (is_callable($access)) {
+            return call_user_func($access);
         }
         return false;
     }
