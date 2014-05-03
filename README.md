@@ -56,7 +56,7 @@ Configuration
         //'dotSymbol' => '&bull;',
 
         //languages table
-        //'langTable' => '{{%languages}}',
+        //'langTable' => '{{%languages}}', //string || null if table not exist
         //'langColCode' => 'code',
         //'langColLabel' => 'name',
         //'langColUpdatedAt' => 'updated_at', //string || null

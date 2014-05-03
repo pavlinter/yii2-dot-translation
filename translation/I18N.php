@@ -107,14 +107,19 @@ class I18N extends \yii\i18n\I18N
 
         if ($this->languages === false) {
 
-            $query = new Query();
-            $query->from($this->langTable)
-                ->where($this->langWhere)
-                ->orderBy($this->langOrder);
+            if ($this->langTable) {
+                $query = new Query();
+                $query->from($this->langTable)
+                    ->where($this->langWhere)
+                    ->orderBy($this->langOrder);
 
-            $this->languages = $query->indexBy($this->langColCode)->all();
+                $this->languages = $query->indexBy($this->langColCode)->all();
+            } else {
+                $this->languages = [];
+            }
 
             if ($this->languages===[]) {
+
                 $this->languages[$this->language] = [
                     'id' => 0,
                     $this->langColCode  => $this->language,
@@ -123,7 +128,7 @@ class I18N extends \yii\i18n\I18N
             }
 
             if ($this->enableCaching) {
-                if ($this->langColUpdatedAt) {
+                if ($this->langTable && $this->langColUpdatedAt) {
 
                     $query = new Query();
                     $sql = $query->select('MAX(' . $this->langColUpdatedAt . ')')
