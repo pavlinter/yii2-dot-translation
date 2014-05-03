@@ -37,10 +37,6 @@ class TranslationAction extends Action
      */
     public function init()
     {
-        if ($this->access === null) {
-            $this->access = Yii::$app->i18n->access;
-        }
-
         if (!Yii::$app->i18n->access($this->access)) {
             throw new ForbiddenHttpException(Yii::t('yii', 'You are not allowed to perform this action.'));
         }

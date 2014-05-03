@@ -58,7 +58,7 @@ class I18N extends \yii\i18n\I18N
 
         $this->changeLanguage();
 
-        if ($this->access($this->access)) {
+        if ($this->access()) {
             $view = Yii::$app->getView();
             $this->registerAssets($view);
             $view->on(View::EVENT_END_BODY, function ($event) {
@@ -253,10 +253,14 @@ class I18N extends \yii\i18n\I18N
     }
     /**
      * User permissions
+     * @param  null|string|function
      * @return boolean
      */
-    public function access($access)
+    public function access($access = null)
     {
+        if ($access === null) {
+            $access = $this->access;
+        }
         if (is_string($access) && Yii::$app->getAuthManager()!==null) {
             return Yii::$app->getUser()->can($access);
         } elseif (is_callable($access)) {
