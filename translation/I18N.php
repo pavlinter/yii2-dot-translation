@@ -9,12 +9,14 @@ use yii\db\Query;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Html;
 use yii\helpers\Url;
+use yii\helpers\Json;
 use yii\web\View;
 use yii\bootstrap\Modal;
 use yii\widgets\ActiveForm;
 use yii\helpers\Security;
 use yii\caching\DbDependency;
 use yii\i18n\MessageSource;
+
 
 class I18N extends \yii\i18n\I18N
 {
@@ -201,7 +203,7 @@ class I18N extends \yii\i18n\I18N
 
         $mod = ArrayHelper::remove($params,'dot',$this->dotCategoryMode);
         if ($this->showDot) {
-            if (!$this->setDot($category,$message,$mod)) {
+            if (!$this->setDot($category,$message,$params,$mod)) {
                 return $this->beforeTranslate.$this->afterTranslate;
             }
         }
@@ -266,52 +268,7 @@ class I18N extends \yii\i18n\I18N
 
         throw new InvalidConfigException("Unable to locate message source for category '$category'.");
     }
-    /**
- * @return string language code
- */
-    public function getLanguage()
-    {
-        return $this->language;
-    }
-    /**
-     * @return array languages list
-     */
-    public function getLanguages()
-    {
-        return $this->languages;
-    }
-    /**
-     * @return int language id from language table
-     */
-    public function getId()
-    {
-        return $this->languageId;
-    }
-    /**
-     * @return string the previous dot target
-     */
-    public function getPrevDot()
-    {
-        return $this->dot;
-    }
-    /**
-     * Force disable all dots
-     */
-    public function disableDot()
-    {
-        $this->dotMode = false;
-    }
-    /**
-     * Set global previous settings
-     */
-    public function enableDot()
-    {
-        $this->dotMode = null;
-    }
-    /**
-     * Set dot mode
-     */
-    public function setDot($category,$message,$mod)
+    public function setDot($category,$message,$params,$mod)
     {
 
         $htmlOptions = [
@@ -321,6 +278,7 @@ class I18N extends \yii\i18n\I18N
             'data-header' => Html::encode($message),
             'data-redirect' => 1,
             'data-hash' => md5($category.$message),
+            'data-params'=>Json::encode($params),
         ];
         $this->dot = Html::tag('span', $this->dotSymbol, $htmlOptions);
 
@@ -381,8 +339,18 @@ class I18N extends \yii\i18n\I18N
                             return false;
                         }
                         if (d.r) {
-                            $("[data-hash=\'" + hash + "\']").prev(".text-' . $this->dotClass . '").html(val);
+                            var dot = $("[data-hash=\'" + hash + "\']");
+                            var params = dot.attr("data-params");
+                            console.log(params);
+                            if (params) {
+                                var o = jQuery.parseJSON(params);
+                                console.log(o);
+                                for (m in o) {
+                                    val = val.replace("{" + m + "}",o[m]);
+                                }
 
+                            }
+                            dot.prev(".text-' . $this->dotClass . '").html(val);
                             var modalID = $("#dots-btn-modal").attr("data-target");
                             $(modalID).modal("hide");
                             $("#dot-btn",form).button("reset");
@@ -444,4 +412,49 @@ class I18N extends \yii\i18n\I18N
             }
         ');
     }
+    /**
+     * @return string language code
+     */
+    public function getLanguage()
+    {
+        return $this->language;
+    }
+    /**
+     * @return array languages list
+     */
+    public function getLanguages()
+    {
+        return $this->languages;
+    }
+    /**
+     * @return int language id from language table
+     */
+    public function getId()
+    {
+        return $this->languageId;
+    }
+    /**
+     * @return string the previous dot target
+     */
+    public function getPrevDot()
+    {
+        return $this->dot;
+    }
+    /**
+     * Force disable all dots
+     */
+    public function disableDot()
+    {
+        $this->dotMode = false;
+    }
+    /**
+     * Set global previous settings
+     */
+    public function enableDot()
+    {
+        $this->dotMode = null;
+    }
+    /**
+     * Set dot mode
+     */
 }
