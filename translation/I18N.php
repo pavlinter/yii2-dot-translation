@@ -14,11 +14,12 @@ use yii\bootstrap\Modal;
 use yii\widgets\ActiveForm;
 use yii\helpers\Security;
 use yii\caching\DbDependency;
+use yii\i18n\MessageSource;
 
 class I18N extends \yii\i18n\I18N
 {
 
-    public $dotMode             = true;
+    public $dotCategory         = ['app' => true];
     public $dotClass            = 'dot-translation';
     public $dotSymbol           = '&bull;';
 
@@ -37,6 +38,8 @@ class I18N extends \yii\i18n\I18N
     public $langParam           = 'lang'; // $_GET KEY
     public $access              = 'dots-control';
 
+    private $dotMode            = null;
+    private $dotCategoryMode    = false;
     private $language           = null;
     private $languageId         = null;
     private $languages          = []; //list languages
@@ -189,24 +192,79 @@ class I18N extends \yii\i18n\I18N
      */
     public function translate($category, $message, $params, $language)
     {
-
         $messageSource = $this->getMessageSource($category);
         $translation = $messageSource->translate($category, $message, $language);
 
-        $mod = ArrayHelper::remove($params,'dot',$this->dotMode);
+        if ($this->dotMode!==null) {
+            $this->dotCategoryMode = $this->dotMode;
+        }
 
-
+        $mod = ArrayHelper::remove($params,'dot',$this->dotCategoryMode);
         if ($this->showDot) {
             if (!$this->setDot($category,$message,$mod)) {
                 return $this->beforeTranslate.$this->afterTranslate;
             }
         }
-
         if ($translation === false) {
             return $this->beforeTranslate.$this->format($message, $params, $messageSource->sourceLanguage).$this->afterTranslate;
         } else {
             return $this->beforeTranslate.$this->format($translation, $params, $language).$this->afterTranslate;
         }
+    }
+    /**
+     * Returns the message source for the given category.
+     * @param string $category the category name.
+     * @return MessageSource the message source for the given category.
+     * @throws InvalidConfigException if there is no message source available for the specified category.
+     */
+    public function getMessageSource($category)
+    {
+        $this->dotCategoryMode = false;
+        if (isset($this->translations[$category])) {
+            if (isset($this->dotCategory[$category])) {
+                $this->dotCategoryMode = $this->dotCategory[$category];
+            } elseif (isset($this->dotCategory['*'])) {
+                $this->dotCategoryMode = $this->dotCategory['*'];
+            }
+            $source = $this->translations[$category];
+            if ($source instanceof MessageSource) {
+                return $source;
+            } else {
+                return $this->translations[$category] = Yii::createObject($source);
+            }
+        } else {
+            // try wildcard matching
+            foreach ($this->translations as $pattern => $source) {
+                if (strpos($pattern, '*') > 0 && strpos($category, rtrim($pattern, '*')) === 0) {
+                    if (isset($this->dotCategory[$category])) {
+                        $this->dotCategoryMode = $this->dotCategory[$category];
+                    } elseif (isset($this->dotCategory[$pattern])) {
+                        $this->dotCategoryMode = $this->dotCategory[$pattern];
+                    } elseif (isset($this->dotCategory['*'])) {
+                        $this->dotCategoryMode = $this->dotCategory['*'];
+                    }
+                    if ($source instanceof MessageSource) {
+                        return $source;
+                    } else {
+                        return $this->translations[$category] = $this->translations[$pattern] = Yii::createObject($source);
+                    }
+                }
+            }
+            // match '*' in the last
+            if (isset($this->translations['*'])) {
+                $source = $this->translations['*'];
+                if (isset($this->dotCategory['*'])) {
+                    $this->dotCategoryMode = $this->dotCategory['*'];
+                }
+                if ($source instanceof MessageSource) {
+                    return $source;
+                } else {
+                    return $this->translations[$category] = $this->translations['*'] = Yii::createObject($source);
+                }
+            }
+        }
+
+        throw new InvalidConfigException("Unable to locate message source for category '$category'.");
     }
     /**
  * @return string language code
@@ -232,9 +290,23 @@ class I18N extends \yii\i18n\I18N
     /**
      * @return string the previous dot target
      */
-    public function getDot()
+    public function getPrevDot()
     {
         return $this->dot;
+    }
+    /**
+     * Force disable all dots
+     */
+    public function disableDot()
+    {
+        $this->dotMode = false;
+    }
+    /**
+     * Set global previous settings
+     */
+    public function enableDot()
+    {
+        $this->dotMode = null;
     }
     /**
      * Set dot mode

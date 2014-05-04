@@ -42,9 +42,13 @@ Configuration
         'class'=>'pavlinter\translation\I18N',
         //default settings
         //'access' => 'dots-control',  //user permissions or function(){ return true || false; }
-        //'dotMode' => true, //show dot after text
-        // * false - disable dot
-        // * '.' - show only dot
+        //'dotCategory' => [ //set global settings for category
+            //'app' => true, //show dot after text(default)
+            //example:
+            //'app*' => true, //In this case we're handling everything that begins with app
+            //'app/menu' => false, //disable dot
+            //'*' => true, //settings for all categories
+        //],
 
         //'dotClass' => 'dot-translation',
         //'dotSymbol' => '&bull;',
@@ -93,28 +97,29 @@ Change language:
 Example:
 ```php
 
-echo Yii::t('app', 'Hello world.'); //dotMode = true
+echo Yii::t('app', 'Hello world.'); used global settings
 
-echo Yii::t('app', 'Hi {username}.', ['username' => 'Bob', 'dot' => true]); //change dotMode
+//individual adjustment
+echo Yii::t('app', 'Hi {username}.', ['username' => 'Bob', 'dot' => true]); //enable dot
 
 echo Yii::t('app', 'Hello world.', ['dot' => false]); //disable dot
 
 echo Html::submitInput(Yii::t('app', 'Submit', ['dot' => false])); //disable dot
 
-echo Yii::$app->i18n->getDot(); // show previous dot
+echo Yii::$app->i18n->getPrevDot(); // show previous dot
 
 // Or
 
-echo Yii::t('app', 'Submit', ['dot' => '.']);
+echo Yii::t('app', 'Submit', ['dot' => '.']); //show only dot
 
 ```
 
 ```php
-Yii::$app->i18n->dotMode = false; //disable if you use widget
+Yii::$app->i18n->disableDot(); //force disable all dots
 
 echo Breadcrumbs::widget([
     'links' => $this->params['breadcrumbs'],
 ]);
 
-Yii::$app->i18n->dotMode = true; //enable again
+Yii::$app->i18n->enableDot(); //enable again
 ```
