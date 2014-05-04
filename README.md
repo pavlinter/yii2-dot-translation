@@ -40,12 +40,6 @@ Configuration
 'components' => [
     'i18n' => [
         'class'=>'pavlinter\translation\I18N',
-        'translations' => [
-            'app*' => [
-                'class' => 'yii\i18n\DbMessageSource',
-                'forceTranslation' => true,
-            ],
-        ],
         //default settings
         //'access' => 'dots-control',  //user permissions or function(){ return true || false; }
         //'dotMode' => true, //show dot after text

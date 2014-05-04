@@ -53,7 +53,21 @@ class I18N extends \yii\i18n\I18N
      */
     public function init()
     {
-        parent::init();
+        if (!isset($this->translations['yii']) && !isset($this->translations['yii*'])) {
+            $this->translations['yii'] = [
+                'class' => 'yii\i18n\PhpMessageSource',
+                'sourceLanguage' => 'en',
+                'basePath' => '@yii/messages',
+            ];
+        }
+        if (!isset($this->translations['app']) && !isset($this->translations['app*'])) {
+            $this->translations['app'] = [
+                'class' => 'yii\i18n\DbMessageSource',
+                'sourceLanguage' => Yii::$app->sourceLanguage,
+                'forceTranslation' => true,
+            ];
+        }
+
         $this->language = Yii::$app->language;
 
         $this->changeLanguage();
