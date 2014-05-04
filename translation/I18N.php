@@ -145,7 +145,7 @@ class I18N extends \yii\i18n\I18N
                 if ($this->langTable && $this->langColUpdatedAt) {
 
                     $query = new Query();
-                    $sql = $query->select('MAX(' . $this->langColUpdatedAt . ')')
+                    $sql = $query->select('COUNT(*),MAX(' . $this->langColUpdatedAt . ')')
                         ->from($this->langTable)
                         ->createCommand()
                         ->getRawSql();
