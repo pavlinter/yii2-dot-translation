@@ -268,6 +268,9 @@ class I18N extends \yii\i18n\I18N
 
         throw new InvalidConfigException("Unable to locate message source for category '$category'.");
     }
+    /**
+     * Set dot mode
+     */
     public function setDot($category,$message,$params,$mod)
     {
 
@@ -464,7 +467,4 @@ class I18N extends \yii\i18n\I18N
     {
         $this->dotMode = null;
     }
-    /**
-     * Set dot mode
-     */
 }
