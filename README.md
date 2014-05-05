@@ -40,6 +40,12 @@ Configuration
 'components' => [
     'i18n' => [
         'class'=>'pavlinter\translation\I18N',
+        //'translations' => [
+            //'myCategory' => [
+                //'class' => 'pavlinter\translation\DbMessageSource',
+                //'forceTranslation' => true,
+            //],
+        //],
         //default settings
         //'access' => 'dots-control',  //user permissions or function(){ return true || false; }
         //'dotCategory' => [ //set global settings for category
