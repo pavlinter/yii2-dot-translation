@@ -3,7 +3,6 @@
 namespace pavlinter\translation;
 
 use Yii;
-use yii\base\Component;
 use yii\base\InvalidConfigException;
 use yii\db\Query;
 use yii\helpers\ArrayHelper;
@@ -13,7 +12,6 @@ use yii\helpers\Json;
 use yii\web\View;
 use yii\bootstrap\Modal;
 use yii\widgets\ActiveForm;
-use yii\helpers\Security;
 use yii\caching\DbDependency;
 use yii\i18n\MessageSource;
 
