@@ -67,7 +67,7 @@ class I18N extends \yii\i18n\I18N
         }
         if (!isset($this->translations['app']) && !isset($this->translations['app*'])) {
             $this->translations['app'] = [
-                'class' => 'yii\i18n\DbMessageSource',
+                'class' => 'pavlinter\translation\DbMessageSource',
                 'sourceLanguage' => Yii::$app->sourceLanguage,
                 'forceTranslation' => true,
             ];
@@ -309,6 +309,16 @@ class I18N extends \yii\i18n\I18N
             return Yii::$app->getUser()->can($access);
         } elseif (is_callable($access)) {
             return call_user_func($access);
+        }
+        return false;
+    }
+    public function getMessageId($category,$message)
+    {
+        $messageSource = $this->getMessageSource($category);
+
+        if(method_exists($messageSource,'getId'))
+        {
+            return $messageSource->getId($message);
         }
         return false;
     }
