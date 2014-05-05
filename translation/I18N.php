@@ -278,7 +278,7 @@ class I18N extends \yii\i18n\I18N
             'data-message' => urlencode($message),
             'data-header' => Html::encode($message),
             'data-redirect' => 1,
-            'data-hash' => md5($category.$message),
+            'data-hash' => $this->getHash($category.$message),
             'data-params'=>Json::encode($params),
         ];
         $this->dot = Html::tag('span', $this->dotSymbol, $htmlOptions);
@@ -324,6 +324,13 @@ class I18N extends \yii\i18n\I18N
         return false;
     }
     /**
+     * Generate hash for message;
+     */
+    public function getHash($data)
+    {
+        return md5($data);
+    }
+    /**
      * Register client side
      */
     public function registerAssets($view)
@@ -355,7 +362,6 @@ class I18N extends \yii\i18n\I18N
                             console.log(params);
                             if (params) {
                                 var o = jQuery.parseJSON(params);
-                                console.log(o);
                                 for (m in o) {
                                     val = val.replace("{" + m + "}",o[m]);
                                 }
@@ -404,7 +410,12 @@ class I18N extends \yii\i18n\I18N
                     success: function(d) {
                         textarea.val("");
                         for(m in d.fields){
-                            $(m).val(d.fields[m]);
+                            val = d.fields[m];
+                            if(val == ""){
+                                $(m).addClass("emptyField").val(header);
+                            }else{
+                                $(m).removeClass("emptyField").val(val);
+                            }
                         }
                     },
                     error: function(response) {
@@ -413,13 +424,18 @@ class I18N extends \yii\i18n\I18N
                 });
                 return false;
             });
-
+            $("#dot-translation-form textarea").on("focus",function(){
+                $(this).removeClass("emptyField");
+            });
         ');
 
         $view->registerCss('
             .'.$this->dotClass.'{
                 cursor: pointer;
                 text-decoration: none;
+            }
+            #dot-translation-form .emptyField{
+                color: silver;
             }
         ');
     }
