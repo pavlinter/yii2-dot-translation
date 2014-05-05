@@ -9,7 +9,6 @@ use yii\helpers\ArrayHelper;
 use yii\helpers\Html;
 use yii\helpers\Url;
 use yii\helpers\Json;
-use yii\web\View;
 use yii\bootstrap\Modal;
 use yii\widgets\ActiveForm;
 use yii\caching\DbDependency;
@@ -78,7 +77,7 @@ class I18N extends \yii\i18n\I18N
         if ($this->access()) {
             $view = Yii::$app->getView();
             $this->registerAssets($view);
-            $view->on(View::EVENT_END_BODY, function ($event) {
+            $view->on($view::EVENT_END_BODY, function ($event) {
 
                 Modal::begin([
                     'header' => '<div id="dots-modal-header" style="padding-right: 10px;"></div>',
