@@ -238,9 +238,9 @@ class I18N extends \yii\i18n\I18N
                     if (isset($this->dotCategory[$category])) {
                         $this->dotCategoryMode = $this->dotCategory[$category];
                     } elseif (isset($this->dotCategory[$pattern])) {
-                        $this->dotCategoryMode = $this->dotCategory[$pattern];
+                        $this->dotCategoryMode = $this->dotCategory[$category] = $this->dotCategory[$pattern];
                     } elseif (isset($this->dotCategory['*'])) {
-                        $this->dotCategoryMode = $this->dotCategory['*'];
+                        $this->dotCategoryMode = $this->dotCategory[$category] = $this->dotCategory['*'];
                     }
                     if ($source instanceof MessageSource) {
                         return $source;
