@@ -36,6 +36,8 @@ class I18N extends \yii\i18n\I18N
     public $router              = 'site/dot-translation';
     public $langParam           = 'lang'; // $_GET KEY
     public $access              = 'dots-control';
+    public $htmlScope           = false;
+    public $htmlScopeClass      = 'bs';
 
     private $dotMode            = null;
     private $dotCategoryMode    = false;
@@ -79,6 +81,9 @@ class I18N extends \yii\i18n\I18N
             $this->registerAssets($view);
             $view->on($view::EVENT_END_BODY, function ($event) {
 
+                if ($this->htmlScope) {
+                    echo Html::beginTag('span',['class' => $this->htmlScopeClass]);
+                }
                 Modal::begin([
                     'header' => '<div id="dots-modal-header" style="padding-right: 10px;"></div>',
                     'toggleButton' => [
@@ -107,6 +112,10 @@ class I18N extends \yii\i18n\I18N
                     ActiveForm::end();
 
                 Modal::end();
+
+                if ($this->htmlScope) {
+                    echo Html::endTag('span');
+                }
 
             });
             $this->showDot = true;
