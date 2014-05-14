@@ -46,8 +46,6 @@ class I18N extends \yii\i18n\I18N
     private $languages          = []; //list languages
     private $dot                = null;
     private $showDot            = false;
-    private $beforeTranslate    = '';
-    private $afterTranslate     = '';
     /**
      * @var boolean encode new message.
      */
@@ -85,7 +83,7 @@ class I18N extends \yii\i18n\I18N
                     echo Html::beginTag('span',['class' => $this->htmlScopeClass]);
                 }
                 Modal::begin([
-                    'header' => '<div id="dots-modal-header" style="padding-right: 10px;"></div>',
+                    'header' => '<div id="dots-modal-header" style="padding-right: 10px;"><div id="dots-modal-cat-header"></div><div id="dots-modal-key-header"></div></div>',
                     'toggleButton' => [
                         'class' => 'hide',
                         'id' => 'dots-btn-modal',
@@ -207,16 +205,22 @@ class I18N extends \yii\i18n\I18N
             $this->dotCategoryMode = $this->dotMode;
         }
 
-        $mod = ArrayHelper::remove($params,'dot',$this->dotCategoryMode);
+        $mod = ArrayHelper::remove($params,'dot');
+        $settings = [
+            'before' => '' ,
+            'after' => '',
+            'return' => false,
+        ];
         if ($this->showDot) {
-            if (!$this->setDot($category,$message,$params,$mod)) {
-                return $this->beforeTranslate.$this->afterTranslate;
+            $settings = ArrayHelper::merge($settings,$this->setDot($category,$message,$params,$mod));
+            if ($settings['return']) {
+                return $settings['before'].$settings['after'];
             }
         }
         if ($translation === false) {
-            return $this->beforeTranslate.$this->format($message, $params, $messageSource->sourceLanguage).$this->afterTranslate;
+            return $settings['before'].$this->format($message, $params, $messageSource->sourceLanguage).$settings['after'];
         } else {
-            return $this->beforeTranslate.$this->format($translation, $params, $language).$this->afterTranslate;
+            return $settings['before'].$this->format($translation, $params, $language).$settings['after'];
         }
     }
     /**
@@ -279,6 +283,16 @@ class I18N extends \yii\i18n\I18N
      */
     public function setDot($category,$message,$params,$mod)
     {
+        $res = [];
+        if (!is_array($mod)) {
+            $mod = ['dot' => $mod];
+        }
+
+        $mod = ArrayHelper::merge([
+            'dot' => $this->dotCategoryMode,
+            'dotSymbol' => $this->dotSymbol,
+        ],$mod);
+
 
         $htmlOptions = [
             'class' => $this->dotClass,
@@ -289,20 +303,20 @@ class I18N extends \yii\i18n\I18N
             'data-hash' => $this->getHash($category.$message),
             'data-params'=>Json::encode($params),
         ];
-        $this->dot = Html::tag('span', $this->dotSymbol, $htmlOptions);
+        $this->dot = Html::tag('span', $mod['dotSymbol'], $htmlOptions);
 
-        if ($mod === true) {
-            $this->beforeTranslate  = Html::beginTag('span', ['class' => 'text-' . $this->dotClass]);
-            $this->afterTranslate   = $this->dot    = Html::endTag('span') . Html::tag('span', $this->dotSymbol, ArrayHelper::merge($htmlOptions, ['data-redirect' => 0]));
-        } elseif ($mod === '.') {
-            $this->beforeTranslate  = $this->dot;
-            $this->afterTranslate   = '';
-            return false;
-        } elseif($mod === false) {
-            $this->beforeTranslate  = '';
-            $this->afterTranslate   = '';
+
+
+        if ($mod['dot'] === true) {
+            $res['before']  = Html::beginTag('span', ['class' => 'text-' . $mod['dotSymbol']]);
+            $res['after']   = $this->dot    = Html::endTag('span') . Html::tag('span', $mod['dotSymbol'], ArrayHelper::merge($htmlOptions, ['data-redirect' => 0]));
+        } elseif ($mod['dot'] === '.') {
+            $res['before']  = $this->dot;
+            $res['return']  = true;
+        } elseif($mod['dot'] === false) {
+
         }
-        return true;
+        return $res;
     }
     /**
      * User permissions
@@ -407,7 +421,8 @@ class I18N extends \yii\i18n\I18N
                 $("#dot-translation-form #dots-inp-category").val(category);
                 $("#dot-translation-form #dots-inp-message").val(message);
 
-                $("#dots-modal-header").text(header);
+                $("#dots-modal-header #dots-modal-cat-header").text(decodeURIComponent(category));
+                $("#dots-modal-header #dots-modal-key-header").html(decodeURIComponent(header));
                 $("#dots-btn-modal").trigger("click");
 
                 jQuery.ajax({
@@ -441,6 +456,16 @@ class I18N extends \yii\i18n\I18N
             .'.$this->dotClass.'{
                 cursor: pointer;
                 text-decoration: none;
+            }
+            #dots-modal-header #dots-modal-cat-header{
+                text-align: center;
+                border-bottom: 1px dashed silver;
+                width: 80%;
+                margin: 0 auto;
+                padding: 0px 0px 5px 0px;
+            }
+            #dots-modal-header #dots-modal-key-header{
+                padding: 13px 0px 0px 0px;
             }
             #dot-translation-form .emptyField{
                 color: silver;
