@@ -413,16 +413,13 @@ class I18N extends \yii\i18n\I18N
                 var redirect    = $(this).attr("data-redirect");
                 var textarea    = $("#dot-translation-form textarea").val("Loading...");
 
-
                 form.attr("data-redirect",redirect);
                 form.attr("data-hash",hash);
 
-
                 $("#dot-translation-form #dots-inp-category").val(category);
                 $("#dot-translation-form #dots-inp-message").val(message);
-
                 $("#dots-modal-header #dots-modal-cat-header").text(decodeURIComponent(category));
-                $("#dots-modal-header #dots-modal-key-header").html(decodeURIComponent(header));
+                $("#dots-modal-header #dots-modal-key-header").html(dotNl2br(header));
                 $("#dots-btn-modal").trigger("click");
 
                 jQuery.ajax({
@@ -445,6 +442,9 @@ class I18N extends \yii\i18n\I18N
 
                     }
                 });
+                function dotNl2br( str ){
+	                return str.replace(/([^>])\n/g, "$1<br/>");
+	            }
                 return false;
             });
             $("#dot-translation-form textarea").on("focus",function(){
