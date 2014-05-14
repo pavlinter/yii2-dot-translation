@@ -285,13 +285,14 @@ class I18N extends \yii\i18n\I18N
     {
         $res = [];
         if (!is_array($mod)) {
-            $mod = ['dot' => $this->dotCategoryMode];
+            $mod = ['dot' => $mod];
         }
 
         $mod = ArrayHelper::merge([
             'dot' => $this->dotCategoryMode,
             'dotSymbol' => $this->dotSymbol,
         ],$mod);
+
 
         $htmlOptions = [
             'class' => $this->dotClass,
