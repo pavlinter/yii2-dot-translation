@@ -11,6 +11,7 @@ use yii\db\Query;
 
 class DbMessageSource extends \yii\i18n\DbMessageSource
 {
+    public  $autoInsert = false;
     private $messagesId = [];
     /**
      * Initializes the DbMessageSource component.
@@ -18,6 +19,20 @@ class DbMessageSource extends \yii\i18n\DbMessageSource
     public function init()
     {
         parent::init();
+        if ($this->autoInsert) {
+            $this->on($this::EVENT_MISSING_TRANSLATION,function($event){
+                if (!isset($this->messagesId[$event->message])) {
+                    echo $event->message.'<br/>';
+                    Yii::$app->db->createCommand()->insert($this->sourceMessageTable,[
+                        'category' => $event->category,
+                        'message'  => $event->message,
+                    ])->execute();
+                    $this->messagesId[$event->message] = Yii::$app->db->lastInsertID;
+                }
+                $event->translatedMessage = $event->message;
+            });
+        }
+
     }
 
     /**
