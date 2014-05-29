@@ -206,17 +206,18 @@ class I18N extends \yii\i18n\I18N
         }
 
         $mod = ArrayHelper::remove($params,'dot');
+
         $settings = [
             'before' => '' ,
             'after' => '',
             'return' => false,
         ];
-        if ($this->showDot) {
-            $settings = ArrayHelper::merge($settings,$this->setDot($category,$message,$params,$mod));
-            if ($settings['return']) {
-                return $settings['before'].$settings['after'];
-            }
+
+        $settings = ArrayHelper::merge($settings,$this->setDot($category,$message,$params,$mod));
+        if ($settings['return']) {
+            return $settings['before'].$settings['after'];
         }
+
         if ($translation === false) {
             return $settings['before'].$this->format($message, $params, $messageSource->sourceLanguage).$settings['after'];
         } else {
@@ -286,6 +287,7 @@ class I18N extends \yii\i18n\I18N
         $res = [];
         if (!is_array($mod)) {
             $mod = ['dot' => ($mod === null?$this->dotCategoryMode:$mod)];
+
         }
 
         $mod = ArrayHelper::merge([
@@ -304,16 +306,16 @@ class I18N extends \yii\i18n\I18N
         ];
         $this->dot = Html::tag('span', $mod['dotSymbol'], $htmlOptions);
 
-
-
-        if ($mod['dot'] === true) {
+        if (!$this->showDot) {
+            if ($mod['dot'] === '.') {
+                $res['return'] = true;
+            }
+        } elseif  ($mod['dot'] === true) {
             $res['before']  = Html::beginTag('span', ['class' => 'text-' . $mod['dotSymbol']]);
             $res['after']   = $this->dot    = Html::endTag('span') . Html::tag('span', $mod['dotSymbol'], ArrayHelper::merge($htmlOptions, ['data-redirect' => 0]));
         } elseif ($mod['dot'] === '.') {
             $res['before']  = $this->dot;
             $res['return']  = true;
-        } elseif($mod['dot'] === false) {
-
         }
         return $res;
     }
