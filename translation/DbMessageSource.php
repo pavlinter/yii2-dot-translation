@@ -12,6 +12,7 @@ use yii\db\Query;
 class DbMessageSource extends \yii\i18n\DbMessageSource
 {
     public  $autoInsert = false;
+    public  $br         = true;
     private $messagesId = [];
     /**
      * Initializes the DbMessageSource component.
@@ -98,7 +99,7 @@ class DbMessageSource extends \yii\i18n\DbMessageSource
         $result = [];
         foreach ($messages as $message) {
             if ($message['translation']!==null) {
-                $result[$message['message']] = $message['translation'];
+                $result[$message['message']] = $this->br?nl2br($message['translation']):$message['translation'];
             }
             $this->messagesId[$message['message']] = $message['id'];
         }
