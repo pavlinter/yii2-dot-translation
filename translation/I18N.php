@@ -295,7 +295,7 @@ class I18N extends \yii\i18n\I18N
             'dotSymbol' => $this->dotSymbol,
         ],$mod);
 
-        $htmlOptions = [
+        $options = [
             'class' => $this->dotClass,
             'data-category' => urlencode($category),
             'data-message' => urlencode($message),
@@ -304,15 +304,15 @@ class I18N extends \yii\i18n\I18N
             'data-hash' => $this->getHash($category.$message),
             'data-params'=>Json::encode($params),
         ];
-        $this->dot = Html::tag('span', $mod['dotSymbol'], $htmlOptions);
+        $this->dot = Html::tag('span', $mod['dotSymbol'], $options);
 
         if (!$this->showDot) {
             if ($mod['dot'] === '.') {
                 $res['return'] = true;
             }
         } elseif  ($mod['dot'] === true) {
-            $res['before']  = Html::beginTag('span', ['class' => 'text-' . $mod['dotSymbol']]);
-            $res['after']   = $this->dot    = Html::endTag('span') . Html::tag('span', $mod['dotSymbol'], ArrayHelper::merge($htmlOptions, ['data-redirect' => 0]));
+            $res['before']  = Html::beginTag('span', ['class' => 'text-' . $options['class']]);
+            $res['after']   = $this->dot    = Html::endTag('span') . Html::tag('span', $mod['dotSymbol'], ArrayHelper::merge($options, ['data-redirect' => 0]));
         } elseif ($mod['dot'] === '.') {
             $res['before']  = $this->dot;
             $res['return']  = true;
@@ -382,7 +382,6 @@ class I18N extends \yii\i18n\I18N
                         if (d.r) {
                             var dot = $("[data-hash=\'" + hash + "\']");
                             var params = dot.attr("data-params");
-                            console.log(params);
                             if (params) {
                                 var o = jQuery.parseJSON(params);
                                 for (m in o) {

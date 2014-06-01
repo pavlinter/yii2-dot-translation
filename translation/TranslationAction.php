@@ -107,7 +107,7 @@ class TranslationAction extends Action
                 }
             }
 
-            return ['r'=>1];
+            return ['r' => 1];
         } else {
 
             $category   = urldecode(Yii::$app->request->get('category'));

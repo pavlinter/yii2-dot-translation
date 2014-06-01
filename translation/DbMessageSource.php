@@ -20,7 +20,7 @@ class DbMessageSource extends \yii\i18n\DbMessageSource
     {
         parent::init();
         if ($this->autoInsert) {
-            $this->on($this::EVENT_MISSING_TRANSLATION,function($event){
+            $this->on(self::EVENT_MISSING_TRANSLATION,function($event){
                 if (!isset($this->messagesId[$event->message])) {
                     echo $event->message.'<br/>';
                     Yii::$app->db->createCommand()->insert($this->sourceMessageTable,[
@@ -32,7 +32,6 @@ class DbMessageSource extends \yii\i18n\DbMessageSource
                 $event->translatedMessage = $event->message;
             });
         }
-
     }
 
     /**
