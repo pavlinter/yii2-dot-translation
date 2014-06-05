@@ -33,6 +33,8 @@ class I18N extends \yii\i18n\I18N
     public $enableCaching       = true;
     public $durationCaching     = 0;
 
+    public $nl2br               = true;
+
     public $router              = 'site/dot-translation';
     public $langParam           = 'lang'; // $_GET KEY
     public $access              = 'dots-control';
@@ -90,7 +92,7 @@ class I18N extends \yii\i18n\I18N
                     ],
                 ]);
 
-                    $form = ActiveForm::begin([
+                    ActiveForm::begin([
                         'id' => 'dot-translation-form',
                         'action' => [$this->router],
                     ]);
@@ -206,6 +208,8 @@ class I18N extends \yii\i18n\I18N
         }
 
         $mod = ArrayHelper::remove($params,'dot');
+        $nl2br = ArrayHelper::remove($params,'nl2br',$this->nl2br);
+
 
         $settings = [
             'before' => '' ,
@@ -216,6 +220,9 @@ class I18N extends \yii\i18n\I18N
         $settings = ArrayHelper::merge($settings,$this->setDot($category,$message,$params,$mod));
         if ($settings['return']) {
             return $settings['before'].$settings['after'];
+        }
+        if ($nl2br) {
+            $message = nl2br($message);
         }
 
         if ($translation === false) {

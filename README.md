@@ -44,6 +44,7 @@ Configuration
             //'myCategory' => [
                 //'class' => 'pavlinter\translation\DbMessageSource',
                 //'forceTranslation' => true,
+                //'autoInsert' => true, //if message key doesn't exist in the database, message key will be created automatically
             //],
         //],
         //default settings
@@ -58,7 +59,7 @@ Configuration
 
         //'dotClass' => 'dot-translation',
         //'dotSymbol' => '&bull;',
-
+        //'nl2br' => true //nl2br filter text
         //languages table
         //'langTable' => '{{%languages}}', //string || null if table not exist
         //'langColCode' => 'code',
@@ -108,7 +109,7 @@ echo Yii::t('app', 'Hello world.'); used global settings
 //individual adjustment
 echo Yii::t('app', 'Hi {username}.', ['username' => 'Bob', 'dot' => true]); //enable dot
 
-echo Yii::t('app', 'Hello world.', ['dot' => false]); //disable dot
+echo Yii::t('app', 'Hello world.', ['dot' => false , 'nl2br' => false]); //disable dot and disable nl2br filter
 
 echo Html::submitInput(Yii::t('app', 'Submit', ['dot' => false])); //disable dot
 
