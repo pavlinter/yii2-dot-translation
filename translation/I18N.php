@@ -72,6 +72,10 @@ class I18N extends \yii\i18n\I18N
             ];
         }
 
+        if (Yii::$app->request->getIsConsoleRequest()) {
+            return true;
+        }
+
         $this->language = Yii::$app->language;
 
         $this->changeLanguage();
@@ -169,8 +173,6 @@ class I18N extends \yii\i18n\I18N
             }
 
         }
-
-
 
         $langKey = Yii::$app->request->get($this->langParam);
 
