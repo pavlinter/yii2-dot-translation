@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * @copyright Copyright &copy; Pavels Radajevs, 2014
+ * @package yii2-dot-translation
+ * @version 1.0.0
+ */
+
 namespace pavlinter\translation;
 
 use Yii;
@@ -9,6 +15,11 @@ use yii\caching\Cache;
 use yii\db\Connection;
 use yii\db\Query;
 
+/**
+ *
+ * @author Pavels Radajevs <pavlinter@gmail.com>
+ * @since 1.0
+ */
 class DbMessageSource extends \yii\i18n\DbMessageSource
 {
     public  $autoInsert = false;

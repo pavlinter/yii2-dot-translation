@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * @copyright Copyright &copy; Pavels Radajevs, 2014
+ * @package yii2-dot-translation
+ * @version 1.0.0
+ */
+
 namespace pavlinter\translation;
 
 use Yii;
@@ -14,7 +20,11 @@ use yii\widgets\ActiveForm;
 use yii\caching\DbDependency;
 use yii\i18n\MessageSource;
 
-
+/**
+ *
+ * @author Pavels Radajevs <pavlinter@gmail.com>
+ * @since 1.0
+ */
 class I18N extends \yii\i18n\I18N
 {
 

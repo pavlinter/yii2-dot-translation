@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * @copyright Copyright &copy; Pavels Radajevs, 2014
+ * @package yii2-dot-translation
+ * @version 1.0.0
+ */
+
 namespace pavlinter\translation;
 
 use Yii;
@@ -11,7 +17,11 @@ use yii\helpers\Html;
 use yii\web\Response;
 use yii\web\ForbiddenHttpException;
 
-
+/**
+ *
+ * @author Pavels Radajevs <pavlinter@gmail.com>
+ * @since 1.0
+ */
 class TranslationAction extends Action
 {
     /**
