@@ -1,6 +1,6 @@
 {
     "name": "pavlinter/yii2-dot-translation",
-    "description": "Сomponent that translates short texts",
+    "description": "Yii2: Component that translates short texts",
     "keywords": ["yii2", "translation", "dot", "component"],
     "type": "yii2-extension",
     "license": "BSD 3-Clause",
