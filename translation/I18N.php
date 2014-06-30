@@ -517,7 +517,10 @@ class I18N extends \yii\i18n\I18N
      */
     public function getPrevDot()
     {
-        return $this->dot;
+        if ($this->access()) {
+            return $this->dot;
+        }
+        return null;
     }
     /**
      * Force disable all dots
