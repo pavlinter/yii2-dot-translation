@@ -240,13 +240,16 @@ class I18N extends \yii\i18n\I18N
         if ($settings['return']) {
             return $settings['before'].$settings['after'];
         }
-        if ($nl2br) {
-            $message = nl2br($message);
-        }
 
         if ($translation === false) {
+            if ($nl2br) {
+                $message = nl2br($message);
+            }
             return $settings['before'].$this->format($message, $params, $messageSource->sourceLanguage).$settings['after'];
         } else {
+            if ($nl2br) {
+                $translation = nl2br($translation);
+            }
             return $settings['before'].$this->format($translation, $params, $language).$settings['after'];
         }
     }
