@@ -45,6 +45,7 @@ class I18N extends \yii\i18n\I18N
 
     public $nl2br               = true;
 
+    public $adminLink                = null;
     public $router              = 'site/dot-translation';
     public $langParam           = 'lang'; // $_GET KEY
     public $access              = 'dots-control';
@@ -91,6 +92,12 @@ class I18N extends \yii\i18n\I18N
         $this->changeLanguage();
 
         if ($this->access()) {
+
+
+            if (is_callable($this->adminLink)) {
+                $this->adminLink = call_user_func($this->adminLink);
+            }
+
             $view = Yii::$app->getView();
             $this->registerAssets($view);
             $view->on($view::EVENT_END_BODY, function ($event) {
@@ -424,6 +431,7 @@ class I18N extends \yii\i18n\I18N
             });
 
             $(document).on("click",".'.$this->dotClass.'",function () {
+                var adminLink = "' . $this->adminLink. '";
                 var form        = $("#dot-translation-form");
                 var category    = $(this).attr("data-category");
                 var message     = $(this).attr("data-message");
@@ -432,12 +440,23 @@ class I18N extends \yii\i18n\I18N
                 var redirect    = $(this).attr("data-redirect");
                 var textarea    = $("#dot-translation-form textarea").val("Loading...");
 
+
                 form.attr("data-redirect",redirect);
                 form.attr("data-hash",hash);
 
                 $("#dot-translation-form #dots-inp-category").val(category);
                 $("#dot-translation-form #dots-inp-message").val(message);
-                $("#dots-modal-header #dots-modal-cat-header").text(decodeURIComponent(category));
+
+
+                if (adminLink){
+                    adminLink = adminLink.replace("{category}",category).replace("{message}",message);
+                    $("#dots-modal-header #dots-modal-cat-header").append("<a href=\"" + adminLink + "\" target=\"_blank\"></a>");
+                    $("#dots-modal-header #dots-modal-cat-header a").text(decodeURIComponent(category));
+                } else {
+                    $("#dots-modal-header #dots-modal-cat-header").text(decodeURIComponent(category));
+                }
+
+
                 $("#dots-modal-header #dots-modal-key-header").html(dotNl2br(header));
                 $("#dots-btn-modal").trigger("click");
 

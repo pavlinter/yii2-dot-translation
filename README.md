@@ -56,7 +56,8 @@ Configuration
             //'app/menu' => false, //disable dot
             //'*' => true, //settings for all categories
         //],
-
+        
+        //'adminLink' => null, //'/index.php?r=adm/translation/message&cat={category}&msg={message}',
         //'dotClass' => 'dot-translation',
         //'dotSymbol' => '&bull;',
         //'nl2br' => true //nl2br filter text
