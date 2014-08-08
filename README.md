@@ -48,6 +48,7 @@ Configuration
             //],
         //],
         //default settings
+        //'dialog' => 'bs', //Bootstrap Modal Or jQuery Dialog (bs or jq)
         //'access' => 'dots-control',  //user permissions or function(){ return true || false; }
         //'dotCategory' => [ //set global settings for category
             //'app' => true, //show dot after text(default)

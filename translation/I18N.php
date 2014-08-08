@@ -15,7 +15,6 @@ use yii\helpers\ArrayHelper;
 use yii\helpers\Html;
 use yii\helpers\Url;
 use yii\helpers\Json;
-use yii\bootstrap\Modal;
 use yii\widgets\ActiveForm;
 use yii\caching\DbDependency;
 use yii\i18n\MessageSource;
@@ -27,6 +26,8 @@ use yii\i18n\MessageSource;
  */
 class I18N extends \yii\i18n\I18N
 {
+    const DIALOG_BS = 'bs';
+    const DIALOG_JQ = 'jq';
 
     public $dotCategory         = ['app' => true];
     public $dotClass            = 'dot-translation';
@@ -51,6 +52,7 @@ class I18N extends \yii\i18n\I18N
     public $access              = 'dots-control';
     public $htmlScope           = false;
     public $htmlScopeClass      = 'bs';
+    public $dialog              = I18N::DIALOG_BS; // bs or jq
 
     private $dotMode            = null;
     private $dotCategoryMode    = false;
@@ -87,8 +89,6 @@ class I18N extends \yii\i18n\I18N
             return true;
         }
 
-        $this->language = Yii::$app->language;
-
         $this->changeLanguage();
 
         if ($this->access()) {
@@ -105,34 +105,36 @@ class I18N extends \yii\i18n\I18N
                 if ($this->htmlScope) {
                     echo Html::beginTag('span',['class' => $this->htmlScopeClass]);
                 }
-                Modal::begin([
-                    'header' => '<div id="dots-modal-header" style="padding-right: 10px;"><div id="dots-modal-cat-header"></div><div id="dots-modal-key-header"></div></div>',
-                    'toggleButton' => [
-                        'class' => 'hide',
-                        'id' => 'dots-btn-modal',
-                    ],
-                ]);
 
-                    ActiveForm::begin([
-                        'id' => 'dot-translation-form',
-                        'action' => [$this->router],
+                if ($this->dialog == I18N::DIALOG_BS) {
+                    \yii\bootstrap\Modal::begin([
+                        'header' => '<div id="dots-modal-header" style="padding-right: 10px;"><div id="dots-modal-cat-header"></div><div id="dots-modal-key-header"></div></div>',
+                        'toggleButton' => [
+                            'class' => 'hide',
+                            'id' => 'dots-btn-modal',
+                        ],
                     ]);
-                        echo Html::hiddenInput('category', '', ['id' => 'dots-inp-category']);
-                        echo Html::hiddenInput('message', '', ['id' => 'dots-inp-message']);
-                        foreach ($this->languages as $code=>$language) {
 
-                            echo Html::beginTag('div', ['class' => 'form-group']);
-                            echo Html::label($language[$this->langColLabel],'dot-translation-' . $code);
-                            echo Html::textarea('translation[' . $code . ']', '', [
-                                'class' => 'form-control',
-                                'id' => 'dot-translation-' . $code]);
-                            echo Html::endTag('div');
-                        }
-                        echo Html::submitButton('Change', ['class' => 'btn btn-success', 'id' => 'dot-btn']);
+                        $this->bodyDialog();
 
-                    ActiveForm::end();
+                    \yii\bootstrap\Modal::end();
+                } else if ($this->dialog == I18N::DIALOG_JQ) {
+                    \yii\jui\Dialog::begin([
+                        'options' => [
+                            'id' => 'dots-btn-modal',
+                        ],
+                        'clientOptions' => [
+                            'autoOpen' => false,
+                            'width' => '50%',
+                        ],
+                    ]);
 
-                Modal::end();
+                        $this->bodyDialog();
+
+                    \yii\jui\Dialog::end();
+                }
+
+
 
                 if ($this->htmlScope) {
                     echo Html::endTag('span');
@@ -147,7 +149,7 @@ class I18N extends \yii\i18n\I18N
      */
     public function changeLanguage()
     {
-
+        $this->language = Yii::$app->language;
         $key = self::className().'Languages';
         $this->languages = Yii::$app->cache->get($key);
 
@@ -387,6 +389,15 @@ class I18N extends \yii\i18n\I18N
      */
     public function registerAssets($view)
     {
+        $script = '';
+        if ($this->dialog == I18N::DIALOG_JQ) {
+            $script = '
+                if($("#dots-modal-header").size() == 0){
+                    $("#dots-btn-modal").closest(".ui-dialog").find(".ui-dialog-title").html("<div id=\"dots-modal-header\"><div id=\"dots-modal-cat-header\"></div><div id=\"dots-modal-key-header\"></div></div>");
+                }
+            ';
+        }
+
         $view->registerJs('
             $("#dot-translation-form button").on("click", function () {
 
@@ -396,7 +407,8 @@ class I18N extends \yii\i18n\I18N
                 var lang        = "'.$this->getLanguage().'";
                 var val         = $("textarea#dot-translation-"+lang,form).val();
 
-                $("#dot-btn",form).button("loading");
+                $("#dot-btn",form).' .($this->dialog == I18N::DIALOG_JQ?'text("Loading...")':'button("loading")') . ';
+
 
                 jQuery.ajax({
                     url: form.attr("action"),
@@ -419,9 +431,7 @@ class I18N extends \yii\i18n\I18N
 
                             }
                             dot.prev(".text-' . $this->dotClass . '").html(val);
-                            var modalID = $("#dots-btn-modal").attr("data-target");
-                            $(modalID).modal("hide");
-                            $("#dot-btn",form).button("reset");
+                            ' .($this->dialog == I18N::DIALOG_JQ?'$("#dots-btn-modal").dialog("close");$("#dot-btn",form).text("Change");':'var modalID = $("#dots-btn-modal").attr("data-target");$(modalID).modal("hide");$("#dot-btn",form).button("reset");') . '
                         }
                     },
                     error: function(response) {
@@ -434,6 +444,7 @@ class I18N extends \yii\i18n\I18N
             });
 
             $(document).on("click",".'.$this->dotClass.'",function () {
+                '.$script.'
                 var adminLink = "' . $this->adminLink. '";
                 var form        = $("#dot-translation-form");
                 var category    = $(this).attr("data-category");
@@ -461,7 +472,8 @@ class I18N extends \yii\i18n\I18N
 
 
                 $("#dots-modal-header #dots-modal-key-header").html(dotNl2br(header));
-                $("#dots-btn-modal").trigger("click");
+                $("#dots-btn-modal").' .($this->dialog == I18N::DIALOG_JQ?'dialog("open")':'trigger("click")') . ';
+
 
                 jQuery.ajax({
                     url: form.attr("action"),
@@ -512,6 +524,27 @@ class I18N extends \yii\i18n\I18N
                 color: silver;
             }
         ');
+    }
+    private function bodyDialog()
+    {
+        ActiveForm::begin([
+            'id' => 'dot-translation-form',
+            'action' => [$this->router],
+        ]);
+        echo Html::hiddenInput('category', '', ['id' => 'dots-inp-category']);
+        echo Html::hiddenInput('message', '', ['id' => 'dots-inp-message']);
+        foreach ($this->languages as $code=>$language) {
+
+            echo Html::beginTag('div', ['class' => 'form-group']);
+            echo Html::label($language[$this->langColLabel],'dot-translation-' . $code);
+            echo Html::textarea('translation[' . $code . ']', '', [
+                'class' => 'form-control',
+                'id' => 'dot-translation-' . $code]);
+            echo Html::endTag('div');
+        }
+        echo Html::submitButton('Change', ['class' => 'btn btn-success', 'id' => 'dot-btn']);
+
+        ActiveForm::end();
     }
     /**
      * @return string language code
