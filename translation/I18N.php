@@ -46,7 +46,7 @@ class I18N extends \yii\i18n\I18N
 
     public $nl2br               = true;
 
-    public $adminLink                = null;
+    public $adminLink           = null;
     public $router              = 'site/dot-translation';
     public $langParam           = 'lang'; // $_GET KEY
     public $access              = 'dots-control';
@@ -161,14 +161,14 @@ class I18N extends \yii\i18n\I18N
                     ->where($this->langWhere)
                     ->orderBy($this->langOrder);
 
-                $this->languages = $query->indexBy($this->langColCode)->all();
+                $this->languages = $query->indexBy('id')->all();
             } else {
                 $this->languages = [];
             }
 
-            if ($this->languages===[]) {
+            if ($this->languages === []) {
 
-                $this->languages[$this->language] = [
+                $this->languages['0'] = [
                     'id' => 0,
                     $this->langColCode  => $this->language,
                     $this->langColLabel => $this->language,
@@ -196,16 +196,22 @@ class I18N extends \yii\i18n\I18N
         $langKey = Yii::$app->request->get($this->langParam);
 
         if ($this->languages) {
-            if ($langKey && isset($this->languages[$langKey])) {
-                $language = $this->languages[$langKey];
-            } else {
+            $language = null;
+            if ($langKey) {
+                foreach ($this->languages as $l) {
+                    if ($l['code'] == $langKey) {
+                        $language = $l;
+                        break;
+                    }
+                }
+            }
+            if($language === null) {
                 $language = reset($this->languages);
             }
-
-            Yii::$app->language = $this->language = $language[$this->langColCode];
+            Yii::$app->language = $language[$this->langColCode];
+            $this->language     = $language;
             $this->languageId   = $language['id'];
         }
-
     }
     /**
      * Translates a message to the specified language.
@@ -404,7 +410,7 @@ class I18N extends \yii\i18n\I18N
                 var form = $(this).closest("form");
                 var hash        = form.attr("data-hash");
                 var redirect    = form.attr("data-redirect")==1;
-                var lang        = "'.$this->getLanguage().'";
+                var lang        = "'.$this->getId().'";
                 var val         = $("textarea#dot-translation-"+lang,form).val();
 
                 $("#dot-btn",form).' .($this->dialog == I18N::DIALOG_JQ?'text("Loading...")':'button("loading")') . ';
@@ -533,13 +539,13 @@ class I18N extends \yii\i18n\I18N
         ]);
         echo Html::hiddenInput('category', '', ['id' => 'dots-inp-category']);
         echo Html::hiddenInput('message', '', ['id' => 'dots-inp-message']);
-        foreach ($this->languages as $code=>$language) {
+        foreach ($this->languages as $id_language => $language) {
 
             echo Html::beginTag('div', ['class' => 'form-group']);
-            echo Html::label($language[$this->langColLabel],'dot-translation-' . $code);
-            echo Html::textarea('translation[' . $code . ']', '', [
+            echo Html::label($language[$this->langColLabel],'dot-translation-' . $id_language);
+            echo Html::textarea('translation[' . $id_language . ']', '', [
                 'class' => 'form-control',
-                'id' => 'dot-translation-' . $code]);
+                'id' => 'dot-translation-' . $id_language]);
             echo Html::endTag('div');
         }
         echo Html::submitButton('Change', ['class' => 'btn btn-success', 'id' => 'dot-btn']);
@@ -547,10 +553,13 @@ class I18N extends \yii\i18n\I18N
         ActiveForm::end();
     }
     /**
-     * @return string language code
+     * @return array|string fields|field from language table
      */
-    public function getLanguage()
+    public function getLanguage($name = null)
     {
+        if ($name !== null && isset($this->language[$name])) {
+            return $this->language[$name];
+        }
         return $this->language;
     }
     /**
