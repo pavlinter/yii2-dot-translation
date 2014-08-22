@@ -15,6 +15,7 @@ class m140428_112450_languages extends \yii\db\Migration
             'id' => Schema::TYPE_PK,
             'code' => Schema::TYPE_STRING . '(16) NOT NULL',
             'name' => Schema::TYPE_STRING . '(20) NOT NULL',
+            'image' => Schema::TYPE_STRING . '(250) NULL',
             'weight' => Schema::TYPE_INTEGER . ' NOT NULL DEFAULT 10',
             'active' => Schema::TYPE_SMALLINT . '(1) NOT NULL DEFAULT 1',
             'updated_at' => Schema::TYPE_TIMESTAMP . ' NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP',

@@ -20,14 +20,13 @@ class m140428_105041_db_translation extends \yii\db\Migration
 
         $this->createTable('{{%message}}', [
             'id' => Schema::TYPE_INTEGER,
-            'language' => Schema::TYPE_STRING . '(16) NOT NULL',
+            'id_language' => Schema::TYPE_INTEGER,
             'translation' => Schema::TYPE_TEXT,
         ], $tableOptions);
 
-        $this->addPrimaryKey('PRIM','{{%message}}',['id','language']);
+        $this->addPrimaryKey('PRIM','{{%message}}',['id','id_language']);
 
-        $this->addForeignKey('fk_message_source_message', '{{%message}}', 'id', '{{%source_message}}', 'id', 'CASCADE', 'RESTRICT');
-
+        $this->addForeignKey('fk_message_source_message', '{{%message}}', 'id', '{{%source_message}}', 'id', 'CASCADE', 'CASCADE');
 
     }
 

@@ -87,8 +87,8 @@ class TranslationAction extends Action
                 $id = Yii::$app->db->getLastInsertID();
             }
 
-            foreach ($translations as $lang => $value) {
-                if (!isset($languages[$lang])) {
+            foreach ($translations as $id_language => $value) {
+                if (!isset($languages[$id_language])) {
                     continue;
                 }
 
@@ -99,19 +99,19 @@ class TranslationAction extends Action
                 $query = new Query();
                 $res = $query->from($this->messageTable)->where([
                             'id' => $id,
-                            'language' => $lang,
+                            'id_language' => $id_language,
                         ])->exists();
                 if ($res) {
                     Yii::$app->db->createCommand()->update($this->messageTable, [
                         'translation'  => $value,
                     ], [
                         'id' => $id,
-                        'language' => $lang,
+                        'id_language' => $id_language,
                     ])->execute();
                 } else {
                     Yii::$app->db->createCommand()->insert($this->messageTable, [
                         'id' => $id,
-                        'language' => $lang,
+                        'id_language' => $id_language,
                         'translation'  => $value,
                     ])->execute();
                 }
@@ -124,12 +124,12 @@ class TranslationAction extends Action
             $message    = urldecode(Yii::$app->request->get('message'));
 
             $json['fields'] = [];
-            foreach ($languages as $code=>$language) {
+            foreach ($languages as $id_language => $language) {
                 $query = new Query();
                 $query->select("m.translation")->from($this->sourceMessageTable.' AS s')
                     ->innerJoin($this->messageTable.' AS m','m.id = s.id')
                     ->where([
-                        'm.language' => $code,
+                        'm.id_language' => $language['id'],
                         's.category' => $category,
                         's.message'  => $message,
                     ]);
@@ -138,7 +138,7 @@ class TranslationAction extends Action
                     $translation = '';
                 }
 
-                $json['fields']['#dot-translation-' . $code] = $translation;
+                $json['fields']['#dot-translation-' . $id_language] = $translation;
 
             }
             return $json;
