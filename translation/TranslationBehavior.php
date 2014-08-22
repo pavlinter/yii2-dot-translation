@@ -111,6 +111,7 @@ class TranslationBehavior extends Behavior
      */
     public function afterFind($event)
     {
+        $this->populateTranslations();
         $this->getTranslation($this->getLanguage());
     }
 
@@ -201,9 +202,10 @@ class TranslationBehavior extends Behavior
             $model = $this->loadLang($data, $id_language);
             if ($model !== false) {
                 $valid = $model->validate() && $valid;
+            } else {
+                $valid = false;
             }
         }
-
         return $valid;
     }
     /**
@@ -269,7 +271,24 @@ class TranslationBehavior extends Behavior
 
         return $translation;
     }
-
+    /**
+     * Populates already loaded translations
+     */
+    private function populateTranslations()
+    {
+        //translations
+        $aRelated = $this->owner->getRelatedRecords();
+        if (isset($aRelated[$this->relation]) && $aRelated[$this->relation] != null) {
+            if (is_array($aRelated[$this->relation])) {
+                foreach ($aRelated[$this->relation] as $model) {
+                    $this->_models[$model->getAttribute($this->languageField)] = $model;
+                }
+            } else {
+                $model = $aRelated[$this->relation];
+                $this->_models[$model->getAttribute($this->languageField)] = $model;
+            }
+        }
+    }
 
 
 } 
