@@ -15,6 +15,8 @@ use yii\helpers\ArrayHelper;
 use yii\helpers\Html;
 use yii\helpers\Url;
 use yii\helpers\Json;
+use yii\web\Application;
+use yii\web\HttpException;
 use yii\widgets\ActiveForm;
 use yii\caching\DbDependency;
 use yii\i18n\MessageSource;
@@ -203,6 +205,11 @@ class I18N extends \yii\i18n\I18N
                         $language = $l;
                         break;
                     }
+                }
+                if ($language === null) {
+                    Yii::$app->on(Application::EVENT_AFTER_REQUEST, function () {
+                        throw new HttpException(404, 'Page not exists');
+                    });
                 }
             }
             if($language === null) {
