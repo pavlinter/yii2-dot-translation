@@ -35,7 +35,7 @@ class I18N extends \yii\i18n\I18N
     public $dotClass            = 'dot-translation';
     public $dotSymbol           = '&bull;';
 
-    public $langTable           = '{{%languages}}';
+    public $langTable           = '{{%language}}';
     public $langColCode         = 'code'; //language code ru,en ...
     public $langColLabel        = 'name';
     public $langColUpdatedAt    = 'updated_at';
