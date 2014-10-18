@@ -49,7 +49,7 @@ class I18N extends \yii\i18n\I18N
     public $nl2br               = true;
 
     public $adminLink           = null;
-    public $router              = 'site/dot-translation';
+    public $router              = '/site/dot-translation';
     public $langParam           = 'lang'; // $_GET KEY
     public $access              = 'dots-control';
     public $htmlScope           = false;
