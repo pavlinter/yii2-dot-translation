@@ -477,7 +477,7 @@ class I18N extends \yii\i18n\I18N
 
                 if (adminLink){
                     adminLink = adminLink.replace("{category}",category).replace("{message}",message);
-                    $("#dots-modal-header #dots-modal-cat-header").append("<a href=\"" + adminLink + "\" target=\"_blank\"></a>");
+                    $("#dots-modal-header #dots-modal-cat-header").html("<a href=\"" + adminLink + "\" target=\"_blank\"></a>");
                     $("#dots-modal-header #dots-modal-cat-header a").text(decodeURIComponent(category));
                 } else {
                     $("#dots-modal-header #dots-modal-cat-header").text(decodeURIComponent(category));
