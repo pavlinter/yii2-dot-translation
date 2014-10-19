@@ -71,7 +71,7 @@ Configuration
 
         //'enableCaching' => true, //for langTable cache
         //'durationCaching' => 0, //langTable cache
-        //'router' => 'site/dot-translation', //'site' your controller
+        //'router' => '/site/dot-translation', //'site' your controller
         //'langParam' => 'lang', // $_GET KEY
     ],
     ...
