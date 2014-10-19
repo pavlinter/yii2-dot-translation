@@ -11,7 +11,7 @@ class m140428_112450_languages extends \yii\db\Migration
             $tableOptions = 'CHARACTER SET utf8 COLLATE utf8_general_ci ENGINE=InnoDB';
         }
 
-        $this->createTable('{{%languages}}', [
+        $this->createTable('{{%language}}', [
             'id' => Schema::TYPE_PK,
             'code' => Schema::TYPE_STRING . '(16) NOT NULL',
             'name' => Schema::TYPE_STRING . '(20) NOT NULL',
@@ -22,13 +22,13 @@ class m140428_112450_languages extends \yii\db\Migration
         ], $tableOptions);
 
 
-        $this->insert('{{%languages}}', [
+        $this->insert('{{%language}}', [
             'code' => 'en',
             'name' => 'English',
             'weight'=> 1,
         ]);
 
-        $this->insert('{{%languages}}', [
+        $this->insert('{{%language}}', [
             'code' => 'ru',
             'name' => 'Russian',
             'weight'=> 2,
@@ -37,6 +37,6 @@ class m140428_112450_languages extends \yii\db\Migration
 
     public function down()
     {
-        $this->dropTable('{{%languages}}');
+        $this->dropTable('{{%language}}');
     }
 }

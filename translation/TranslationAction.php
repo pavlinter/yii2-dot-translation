@@ -33,14 +33,17 @@ class TranslationAction extends Action
      */
     public $messageTable = '{{%message}}';
     /**
- * @var boolean encode new message.
- */
+     * @var boolean encode new message.
+     */
     public $htmlEncode = true;
     /**
      * @var null|string|function.
      */
     public $access = null;
-
+    /**
+     * @var null|string|function.
+     */
+    public $adminLink = null;
     /**
      * Initializes the action.
      * @throws InvalidConfigException if the font file does not exist.
@@ -116,14 +119,16 @@ class TranslationAction extends Action
                     ])->execute();
                 }
             }
-
-            return ['r' => 1];
+            $json['r'] = 1;
+            return $json;
         } else {
 
             $category   = urldecode(Yii::$app->request->get('category'));
             $message    = urldecode(Yii::$app->request->get('message'));
 
-            $json['fields'] = [];
+            $json['fields']     = [];
+            $json['adminLink'] = $this->getAdminLink($category, $message);
+
             foreach ($languages as $id_language => $language) {
                 $query = new Query();
                 $query->select("m.translation")->from($this->sourceMessageTable.' AS s')
@@ -143,6 +148,26 @@ class TranslationAction extends Action
             }
             return $json;
         }
+    }
+    public function getAdminLink($category, $message)
+    {
+        if (is_callable($this->adminLink)) {
+            $to = call_user_func($this->adminLink, $category, $message);
+        } else{
+            $to = $this->adminLink;
+        }
+        if (is_array($to)) {
+            if (!isset($to['category'])) {
+                $to['category'] = $category;
+            }
+            if (!isset($to['message'])) {
+                $to['message']  = $message;
+            }
+        }
+        if ($to) {
+            return urlencode(Url::to($to));
+        }
+        return null;
     }
 
 }
