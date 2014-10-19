@@ -434,13 +434,9 @@ class I18N extends \yii\i18n\I18N
                                 for (m in o) {
                                     val = val.replace("{" + m + "}",o[m]);
                                 }
+                            }
+                            dot.prev(".text-' . $this->dotClass . '").html(val);
 
-                            }
-                            if(d.htmlEncode){
-                                dot.prev(".text-' . $this->dotClass . '").text(val);
-                            } else {
-                                dot.prev(".text-' . $this->dotClass . '").html(val);
-                            }
                             ' .($this->dialog == I18N::DIALOG_JQ?'$("#dots-btn-modal").dialog("close");$("#dot-btn",form).text("Change");':'var modalID = $("#dots-btn-modal").attr("data-target");$(modalID).modal("hide");$("#dot-btn",form).button("reset");') . '
                         }
                     },
@@ -491,10 +487,8 @@ class I18N extends \yii\i18n\I18N
                         for(m in d.fields){
                             val = d.fields[m];
                             if(val == ""){
-                                val = $("#dots-filter").html(header).text();
                                 $(m).addClass("emptyField").val(val);
                             }else{
-                                val = $("#dots-filter").html(val).text();
                                 $(m).removeClass("emptyField").val(val);
                             }
                         }

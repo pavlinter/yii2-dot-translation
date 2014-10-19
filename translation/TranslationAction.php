@@ -131,7 +131,6 @@ class TranslationAction extends Action
                     ])->execute();
                 }
             }
-            $json['htmlEncode'] = $this->htmlEncode;
             $json['r'] = 1;
             return $json;
         } else {
@@ -151,7 +150,8 @@ class TranslationAction extends Action
                         's.category' => $category,
                         's.message'  => $message,
                     ]);
-                $translation = $query->scalar();
+                $translation = Html::decode($query->scalar());
+
                 if ($translation === false) {
                     $translation = '';
                 }
