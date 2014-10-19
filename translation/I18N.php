@@ -438,7 +438,11 @@ class I18N extends \yii\i18n\I18N
                                 }
 
                             }
-                            dot.prev(".text-' . $this->dotClass . '").html(val);
+                            if(d.htmlEncode){
+                                dot.prev(".text-' . $this->dotClass . '").text(val);
+                            } else {
+                                dot.prev(".text-' . $this->dotClass . '").html(val);
+                            }
                             ' .($this->dialog == I18N::DIALOG_JQ?'$("#dots-btn-modal").dialog("close");$("#dot-btn",form).text("Change");':'var modalID = $("#dots-btn-modal").attr("data-target");$(modalID).modal("hide");$("#dot-btn",form).button("reset");') . '
                         }
                     },
@@ -465,8 +469,8 @@ class I18N extends \yii\i18n\I18N
                 form.attr("data-redirect",redirect);
                 form.attr("data-hash",hash);
 
-                $("#dot-translation-form #dots-inp-category").val(category);
-                $("#dot-translation-form #dots-inp-message").val(message);
+                $("#dot-translation-form #dots-inp-category").val(decodeURIComponent(category));
+                $("#dot-translation-form #dots-inp-message").val(decodeURIComponent(message));
 
                 $("#dots-modal-header #dots-modal-key-header").html(dotNl2br(header));
                 $("#dots-btn-modal").' .($this->dialog == I18N::DIALOG_JQ?'dialog("open")':'trigger("click")') . ';
@@ -480,18 +484,21 @@ class I18N extends \yii\i18n\I18N
                     success: function(d) {
                         textarea.val("");
                         var $dotHeader = $("#dots-modal-header #dots-modal-cat-header")
+
                         if (d.adminLink){
                             $dotHeader.html("<a href=\"" + d.adminLink + "\" target=\"_blank\"></a>");
-                            $("a", $dotHeader).text(category);
+                            $("a", $dotHeader).text(decodeURIComponent(category));
                         } else {
-                            $dotHeader.text(category);
+                            $dotHeader.text(decodeURIComponent(category));
                         }
 
                         for(m in d.fields){
                             val = d.fields[m];
                             if(val == ""){
-                                $(m).addClass("emptyField").val(header);
+                                val = $("#dots-filter").html(header).text();
+                                $(m).addClass("emptyField").val(val);
                             }else{
+                                val = $("#dots-filter").html(val).text();
                                 $(m).removeClass("emptyField").val(val);
                             }
                         }
@@ -528,6 +535,9 @@ class I18N extends \yii\i18n\I18N
             #dot-translation-form .emptyField{
                 color: silver;
             }
+            #dot-translation-form #dots-filter{
+                display: none;
+            }
         ');
     }
     private function bodyDialog()
@@ -536,6 +546,7 @@ class I18N extends \yii\i18n\I18N
             'id' => 'dot-translation-form',
             'action' => [$this->router],
         ]);
+        echo Html::tag('div',null,['id' => 'dots-filter']);
         echo Html::hiddenInput('category', '', ['id' => 'dots-inp-category']);
         echo Html::hiddenInput('message', '', ['id' => 'dots-inp-message']);
         foreach ($this->languages as $id_language => $language) {

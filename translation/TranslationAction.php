@@ -119,6 +119,7 @@ class TranslationAction extends Action
                     ])->execute();
                 }
             }
+            $json['htmlEncode'] = $this->htmlEncode;
             $json['r'] = 1;
             return $json;
         } else {
