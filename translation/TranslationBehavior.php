@@ -16,6 +16,7 @@ use yii\db\ActiveRecord;
  *
  * @author Pavels Radajevs <pavlinter@gmail.com>
  * @since 1.0
+ * @commit c79ab7cf9d77cf107ce060323a0b1fb1ec01c505
  */
 class TranslationBehavior extends Behavior
 {
