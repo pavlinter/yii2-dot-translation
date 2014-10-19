@@ -420,28 +420,24 @@ class I18N extends \yii\i18n\I18N
                     type: "POST",
                     dataType: "json",
                     data: form.serialize(),
-                    success: function(d) {
-                        if (redirect) {
-                            location.href = "'.Url::to('').'";
-                            return false;
-                        }
-                        if (d.r) {
-                            var val = d.message;
-                            var dot = $("[data-hash=\'" + hash + "\']");
-                            var params = dot.attr("data-params");
-                            if (params) {
-                                var o = jQuery.parseJSON(params);
-                                for (m in o) {
-                                    val = val.replace("{" + m + "}",o[m]);
-                                }
+                }).done(function(d) {
+                    if (redirect) {
+                        location.href = "'.Url::to('').'";
+                        return false;
+                    }
+                    if (d.r) {
+                        var val = d.message;
+                        var dot = $("[data-hash=\'" + hash + "\']");
+                        var params = dot.attr("data-params");
+                        if (params) {
+                            var o = jQuery.parseJSON(params);
+                            for (m in o) {
+                                val = val.replace("{" + m + "}",o[m]);
                             }
-                            dot.prev(".text-' . $this->dotClass . '").html(val);
-
-                            ' .($this->dialog == I18N::DIALOG_JQ?'$("#dots-btn-modal").dialog("close");$("#dot-btn",form).text("Change");':'var modalID = $("#dots-btn-modal").attr("data-target");$(modalID).modal("hide");$("#dot-btn",form).button("reset");') . '
                         }
-                    },
-                    error: function(response) {
+                        dot.prev(".text-' . $this->dotClass . '").html(val);
 
+                        ' .($this->dialog == I18N::DIALOG_JQ?'$("#dots-btn-modal").dialog("close");$("#dot-btn",form).text("Change");':'var modalID = $("#dots-btn-modal").attr("data-target");$(modalID).modal("hide");$("#dot-btn",form).button("reset");') . '
                     }
                 });
 
@@ -473,28 +469,24 @@ class I18N extends \yii\i18n\I18N
                     type: "GET",
                     dataType: "json",
                     data: {category: category,message: message},
-                    success: function(d) {
-                        textarea.val("");
-                        var $dotHeader = $("#dots-modal-header #dots-modal-cat-header")
+                }).done(function(d) {
+                    textarea.val("");
+                    var $dotHeader = $("#dots-modal-header #dots-modal-cat-header")
 
-                        if (d.adminLink){
-                            $dotHeader.html("<a href=\"" + d.adminLink + "\" target=\"_blank\"></a>");
-                            $("a", $dotHeader).text(decodeURIComponent(category));
-                        } else {
-                            $dotHeader.text(decodeURIComponent(category));
+                    if (d.adminLink){
+                        $dotHeader.html("<a href=\"" + d.adminLink + "\" target=\"_blank\"></a>");
+                        $("a", $dotHeader).text(decodeURIComponent(category));
+                    } else {
+                        $dotHeader.text(decodeURIComponent(category));
+                    }
+
+                    for(m in d.fields){
+                        val = d.fields[m];
+                        if(val == ""){
+                            $(m).addClass("emptyField").val(val);
+                        }else{
+                            $(m).removeClass("emptyField").val(val);
                         }
-
-                        for(m in d.fields){
-                            val = d.fields[m];
-                            if(val == ""){
-                                $(m).addClass("emptyField").val(val);
-                            }else{
-                                $(m).removeClass("emptyField").val(val);
-                            }
-                        }
-                    },
-                    error: function(response) {
-
                     }
                 });
                 function dotNl2br( str ){
