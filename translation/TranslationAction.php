@@ -68,6 +68,7 @@ class TranslationAction extends Action
 
         $languages = Yii::$app->i18n->getLanguages();
 
+
         if (Yii::$app->request->isPost) {
 
 
@@ -90,6 +91,8 @@ class TranslationAction extends Action
                 $id = Yii::$app->db->getLastInsertID();
             }
 
+            $json['message'] = false;
+
             foreach ($translations as $id_language => $value) {
                 if (!isset($languages[$id_language])) {
                     continue;
@@ -98,6 +101,15 @@ class TranslationAction extends Action
                 if ($this->htmlEncode) {
                     $value = Html::encode($value);
                 }
+
+                if (Yii::$app->i18n->getId() == $id_language) {
+                    if (Yii::$app->i18n->nl2br) {
+                        $json['message'] = nl2br($value);
+                    } else {
+                        $json['message'] = $value;
+                    }
+                }
+
 
                 $query = new Query();
                 $res = $query->from($this->messageTable)->where([

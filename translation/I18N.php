@@ -412,13 +412,10 @@ class I18N extends \yii\i18n\I18N
                 var form = $(this).closest("form");
                 var hash        = form.attr("data-hash");
                 var redirect    = form.attr("data-redirect")==1;
-                var lang        = "'.$this->getId().'";
-                var val         = $("textarea#dot-translation-"+lang,form).val();
 
                 $("#dot-btn",form).' .($this->dialog == I18N::DIALOG_JQ?'text("Loading...")':'button("loading")') . ';
 
-
-                jQuery.ajax({
+                $.ajax({
                     url: form.attr("action"),
                     type: "POST",
                     dataType: "json",
@@ -429,6 +426,7 @@ class I18N extends \yii\i18n\I18N
                             return false;
                         }
                         if (d.r) {
+                            var val = d.message;
                             var dot = $("[data-hash=\'" + hash + "\']");
                             var params = dot.attr("data-params");
                             if (params) {
@@ -465,7 +463,6 @@ class I18N extends \yii\i18n\I18N
                 var redirect    = $(this).attr("data-redirect");
                 var textarea    = $("#dot-translation-form textarea").val("Loading...");
 
-
                 form.attr("data-redirect",redirect);
                 form.attr("data-hash",hash);
 
@@ -475,8 +472,7 @@ class I18N extends \yii\i18n\I18N
                 $("#dots-modal-header #dots-modal-key-header").html(dotNl2br(header));
                 $("#dots-btn-modal").' .($this->dialog == I18N::DIALOG_JQ?'dialog("open")':'trigger("click")') . ';
 
-
-                jQuery.ajax({
+                $.ajax({
                     url: form.attr("action"),
                     type: "GET",
                     dataType: "json",

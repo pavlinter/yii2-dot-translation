@@ -48,6 +48,7 @@ Configuration
             //],
         //],
         //default settings
+
         //'dialog' => 'bs', //Bootstrap Modal Or jQuery Dialog (bs or jq)
         //'access' => 'dots-control',  //user permissions or function(){ return true || false; }
         //'dotCategory' => [ //set global settings for category
@@ -57,7 +58,7 @@ Configuration
             //'app/menu' => false, //disable dot
             //'*' => true, //settings for all categories
         //],
-
+        //'nl2br' => true,
         //'dotClass' => 'dot-translation',
         //'dotSymbol' => '&bull;',
         //'nl2br' => true //nl2br filter text
