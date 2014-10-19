@@ -95,9 +95,9 @@ class I18N extends \yii\i18n\I18N
         if ($this->access()) {
 
             $view = Yii::$app->getView();
-            $this->registerAssets($view);
-            $view->on($view::EVENT_END_BODY, function ($event) {
 
+            $view->on($view::EVENT_END_BODY, function ($event) {
+                $this->registerAssets();
                 if ($this->htmlScope) {
                     echo Html::beginTag('span',['class' => $this->htmlScopeClass]);
                 }
@@ -394,8 +394,9 @@ class I18N extends \yii\i18n\I18N
     /**
      * Register client side
      */
-    public function registerAssets($view)
+    public function registerAssets()
     {
+        $view = Yii::$app->getView();
         $script = '';
         if ($this->dialog == I18N::DIALOG_JQ) {
             $script = '
