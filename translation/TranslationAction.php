@@ -68,13 +68,12 @@ class TranslationAction extends Action
 
         $languages = Yii::$app->i18n->getLanguages();
 
+        $category       = Yii::$app->request->post('category');
+        $message        = Yii::$app->request->post('message');
+        $translations   = Yii::$app->request->post('translation');
 
-        if (Yii::$app->request->isPost) {
+        if ($translations) {
 
-
-            $category           = urldecode(Yii::$app->request->post('category'));
-            $message            = urldecode(Yii::$app->request->post('message'));
-            $translations       = Yii::$app->request->post('translation');
 
             $query = new Query();
             $query->select('id')->from($this->sourceMessageTable)->where([
@@ -135,11 +134,8 @@ class TranslationAction extends Action
             return $json;
         } else {
 
-            $category   = urldecode(Yii::$app->request->get('category'));
-            $message    = urldecode(Yii::$app->request->get('message'));
-
             $json['fields']     = [];
-            $json['adminLink'] = $this->getAdminLink($category, $message);
+            $json['adminLink']  = $this->getAdminLink();
 
             foreach ($languages as $id_language => $language) {
                 $query = new Query();
@@ -162,23 +158,15 @@ class TranslationAction extends Action
             return $json;
         }
     }
-    public function getAdminLink($category, $message)
+    public function getAdminLink()
     {
         if (is_callable($this->adminLink)) {
-            $to = call_user_func($this->adminLink, $category, $message);
+            $to = call_user_func($this->adminLink);
         } else{
             $to = $this->adminLink;
         }
-        if (is_array($to)) {
-            if (!isset($to['category'])) {
-                $to['category'] = $category;
-            }
-            if (!isset($to['message'])) {
-                $to['message']  = $message;
-            }
-        }
         if ($to) {
-            return urlencode(Url::to($to));
+            return Url::to($to);
         }
         return null;
     }

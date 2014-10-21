@@ -86,7 +86,7 @@ public function actions()
     return [
         'dot-translation' => [
             'class' => 'pavlinter\translation\TranslationAction',
-            //'adminLink' => null; example: ['admin/translation/fulledit'], result: Url::to(['admin/translation/fulledit','category' => ... ,'message' => ...]);
+            //'adminLink' => null;  //array|string|function
             //'htmlEncode' => true, //encode new message
             //'access' => null, //default Yii::$app->i18n->access
         ],

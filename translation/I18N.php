@@ -335,12 +335,10 @@ class I18N extends \yii\i18n\I18N
 
         $options = [
             'class' => $this->dotClass,
-            'data-category' => urlencode($category),
-            'data-message' => urlencode($message),
-            'data-header' => Html::encode($message),
+            'data-keys' => Json::encode(['category' => $category, 'message' => $message]),
             'data-redirect' => 1,
             'data-hash' => $this->getHash($category.$message),
-            'data-params'=>Json::encode($params),
+            'data-params'=> Json::encode($params),
         ];
         $this->dot = Html::tag('span', $mod['dotSymbol'], $options);
 
@@ -406,6 +404,8 @@ class I18N extends \yii\i18n\I18N
             ';
         }
 
+        $request = Yii::$app->getRequest();
+
         $view->registerJs('
             $("#dot-translation-form button").on("click", function () {
 
@@ -447,37 +447,40 @@ class I18N extends \yii\i18n\I18N
 
             $(document).on("click",".'.$this->dotClass.'",function () {
                 '.$script.'
-                var form        = $("#dot-translation-form");
-                var category    = $(this).attr("data-category");
-                var message     = $(this).attr("data-message");
-                var header      = $(this).attr("data-header");
-                var hash        = $(this).attr("data-hash");
-                var redirect    = $(this).attr("data-redirect");
-                var textarea    = $("#dot-translation-form textarea").val("Loading...");
+                var $form       = $("#dot-translation-form");
+                var $el         = $(this);
+                var k           = $.parseJSON($el.attr("data-keys"));
+                var hash        = $el.attr("data-hash");
+                var redirect    = $el.attr("data-redirect");
+                var $textarea   = $("#dot-translation-form textarea").val("Loading...");
 
-                form.attr("data-redirect",redirect);
-                form.attr("data-hash",hash);
+                $form.attr("data-redirect",redirect);
+                $form.attr("data-hash",hash);
 
-                $("#dot-translation-form #dots-inp-category").val(decodeURIComponent(category));
-                $("#dot-translation-form #dots-inp-message").val(decodeURIComponent(message));
+                $("#dot-translation-form #dots-inp-category").val(k.category);
+                $("#dot-translation-form #dots-inp-message").val(k.message);
 
-                $("#dots-modal-header #dots-modal-key-header").html(dotNl2br(header));
+                $("#dots-modal-header #dots-modal-key-header").html(k.message);
                 $("#dots-btn-modal").' .($this->dialog == I18N::DIALOG_JQ?'dialog("open")':'trigger("click")') . ';
 
                 $.ajax({
-                    url: form.attr("action"),
-                    type: "GET",
+                    url: $form.attr("action"),
+                    type: "POST",
                     dataType: "json",
-                    data: {category: category,message: message},
+                    data: k,
                 }).done(function(d) {
-                    textarea.val("");
+                    $textarea.val("");
                     var $dotHeader = $("#dots-modal-header #dots-modal-cat-header")
 
                     if (d.adminLink){
-                        $dotHeader.html("<a href=\"" + d.adminLink + "\" target=\"_blank\"></a>");
-                        $("a", $dotHeader).text(decodeURIComponent(category));
+                        var $adminLinkForm = $("<form method=\"post\" action=\"" + d.adminLink + "\" target=\"_blank\"><input type=\"hidden\" name=\"category\" value=\"" + k.category + "\" /><input type=\"hidden\" name=\"message\" value=\"" + k.message + "\" /><input type=\"hidden\" name=\"'.$request->csrfParam.'\" value=\"'.$request->getCsrfToken().'\" /><a href=\"javascript:void(0);\">" + k.category + "</a></form>");
+                        $adminLinkForm.find("a").on("click", function(){
+                            $(this).closest("form").submit();
+                            return false;
+                        });
+                        $dotHeader.html($adminLinkForm);
                     } else {
-                        $dotHeader.text(decodeURIComponent(category));
+                        $dotHeader.text(k.category);
                     }
 
                     for(m in d.fields){
@@ -489,9 +492,6 @@ class I18N extends \yii\i18n\I18N
                         }
                     }
                 });
-                function dotNl2br( str ){
-	                return str.replace(/([^>])\n/g, "$1<br/>");
-	            }
                 return false;
             });
             $("#dot-translation-form textarea").on("focus",function(){
