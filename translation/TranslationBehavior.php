@@ -47,7 +47,14 @@ class TranslationBehavior extends Behavior
      */
     private $_language;
 
-
+    /**
+     * Returns models' language.
+     * @return array
+     */
+    public function getLangModels()
+    {
+        return $this->_models;
+    }
     /**
      * @inheritdoc
      */
