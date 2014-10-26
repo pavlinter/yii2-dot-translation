@@ -113,19 +113,19 @@ class TranslationAction extends Action
                 $query = new Query();
                 $res = $query->from($this->messageTable)->where([
                             'id' => $id,
-                            'id_language' => $id_language,
+                            'language_id' => $id_language,
                         ])->exists();
                 if ($res) {
                     Yii::$app->db->createCommand()->update($this->messageTable, [
                         'translation'  => $value,
                     ], [
                         'id' => $id,
-                        'id_language' => $id_language,
+                        'language_id' => $id_language,
                     ])->execute();
                 } else {
                     Yii::$app->db->createCommand()->insert($this->messageTable, [
                         'id' => $id,
-                        'id_language' => $id_language,
+                        'language_id' => $id_language,
                         'translation'  => $value,
                     ])->execute();
                 }
@@ -142,7 +142,7 @@ class TranslationAction extends Action
                 $query->select("m.translation")->from($this->sourceMessageTable.' AS s')
                     ->innerJoin($this->messageTable.' AS m','m.id = s.id')
                     ->where([
-                        'm.id_language' => $language['id'],
+                        'm.language_id' => $language['id'],
                         's.category' => $category,
                         's.message'  => $message,
                     ]);

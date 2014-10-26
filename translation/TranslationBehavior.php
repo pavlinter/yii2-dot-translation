@@ -27,7 +27,7 @@ class TranslationBehavior extends Behavior
     /**
      * @var string the language field used in the related table. Determines the language to query | save.
      */
-    public $languageField = 'id_language';
+    public $languageField = 'language_id';
     /**
      * @var string the scenario.
      */

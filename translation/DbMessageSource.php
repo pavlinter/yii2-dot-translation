@@ -86,7 +86,7 @@ class DbMessageSource extends \yii\i18n\DbMessageSource
         $mainQuery = new Query();
         $mainQuery->select(['t1.id', 't1.message message', 't2.translation translation'])
             ->from([$this->sourceMessageTable . ' t1'])
-            ->leftJoin($this->messageTable . ' t2','t1.id = t2.id AND t2.id_language = :language')
+            ->leftJoin($this->messageTable . ' t2','t1.id = t2.id AND t2.language_id = :language')
             ->where('t1.category = :category')
             ->params([':category' => $category, ':language' => Yii::$app->getI18n()->getId()]);
 
