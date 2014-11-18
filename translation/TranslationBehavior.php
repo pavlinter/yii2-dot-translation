@@ -188,31 +188,23 @@ class TranslationBehavior extends Behavior
         }
         return $valid;
     }
-    public function validateAll($data, $onlyTranslation = false)
+    public function validateAll($attributeNames = null, $clearErrors = true)
     {
-        $valid = true;
-        if ($onlyTranslation === false) {
-            $valid = $this->owner->load($data) && $valid;
-            if($valid === false){
-                return $valid;
-            }
-            $valid = $this->owner->validate() && $valid;
-        }
-        return $this->validateAllTranslation($data) && $valid;
+        $valid = $this->owner->validate($attributeNames, $clearErrors);
+        return $this->validateAllTranslation($attributeNames, $clearErrors) && $valid;
     }
-
-
-    public function validateAllTranslation($data)
+    public function loadAll($data)
+    {
+        $valid = $this->owner->load($data);
+        return $this->loadLangs($data) && $valid;
+    }
+    public function validateAllTranslation($attributeNames = null, $clearErrors = true)
     {
         $valid = true;
         foreach (Yii::$app->getI18n()->getLanguages() as $id_language => $language) {
             /** @var ActiveRecord $model */
-            $model = $this->loadLang($data, $id_language);
-            if ($model !== false) {
-                $valid = $model->validate() && $valid;
-            } else {
-                $valid = false;
-            }
+            $model = $this->getTranslation($id_language);
+            $valid = $model->validate($attributeNames, $clearErrors) && $valid;
         }
         return $valid;
     }
@@ -232,7 +224,7 @@ class TranslationBehavior extends Behavior
         $class = $relation->modelClass;
         $reflector = new ReflectionClass($relation->modelClass);
         $scope  = $reflector->getShortName();
-        if (isset($data[$scope][$id_language])) {
+        if (isset($data[$scope][$id_language]) && !empty($data[$scope][$id_language])) {
             $model = $this->getTranslation($id_language);
             $model->setAttributes($data[$scope][$id_language]);
             return $model;
@@ -240,6 +232,23 @@ class TranslationBehavior extends Behavior
             return false;
         }
     }
+    /**
+     * Returns translation model
+     * @param array $data the data array. This is usually `$_POST` or `$_GET`, but can also be any valid array
+     * supplied by end user.
+     * @return bool
+     */
+    public function loadLangs($data)
+    {
+        $valid = true;
+        foreach (Yii::$app->getI18n()->getLanguages() as $id_language => $language) {
+            /** @var ActiveRecord $model */
+            $model = $this->loadLang($data, $id_language);
+            $valid = $model !== false && $valid;
+        }
+        return $valid;
+    }
+
     /**
      * Returns a related translation model
      * @param integer|null $language the language to return. If null, current sys language
