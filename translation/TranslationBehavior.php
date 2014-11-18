@@ -2,8 +2,8 @@
 /**
  * @copyright Copyright &copy; Pavels Radajevs, 2014
  * @package yii2-dot-translation
- * @version 1.0.0
  */
+
 namespace pavlinter\translation;
 
 use ReflectionClass;
@@ -15,7 +15,6 @@ use yii\db\ActiveRecord;
 /**
  *
  * @author Pavels Radajevs <pavlinter@gmail.com>
- * @since 1.0
  * @commit c79ab7cf9d77cf107ce060323a0b1fb1ec01c505
  */
 class TranslationBehavior extends Behavior
@@ -167,7 +166,7 @@ class TranslationBehavior extends Behavior
      * Saves current translation model
      * @return bool
      */
-    public function saveTranslation($id_language = null,$validate = true)
+    public function saveTranslation($id_language = null,$runValidation = true, $attributeNames = null)
     {
         $model = $this->getTranslation($id_language);
         $dirty = $model->getDirtyAttributes();
@@ -177,28 +176,53 @@ class TranslationBehavior extends Behavior
         /** @var \yii\db\ActiveQuery $relation */
         $relation = $this->owner->getRelation($this->relation);
         $model->{key($relation->link)} = $this->owner->getPrimaryKey();
-        return $model->save($validate);
+        return $model->save($runValidation, $attributeNames);
 
     }
-    public function saveAllTranslation($validate = true)
+    /**
+     * Saves model and translations models
+     * @param bool $runValidation
+     * @param null $attributeNames
+     * @return bool
+     */
+    public function saveAll($runValidation = true, $attributeNames = null)
+    {
+        return $this->owner->save($runValidation, $attributeNames) && $this->saveTranslations($runValidation, $attributeNames);
+    }
+
+    /**
+     * Saves only translations models
+     * @param bool $runValidation
+     * @param null $attributeNames
+     * @return bool
+     */
+    public function saveTranslations($runValidation = true, $attributeNames = null)
     {
         $valid = true;
         foreach (Yii::$app->getI18n()->getLanguages() as $id_language => $language) {
-            $valid = $this->saveTranslation($id_language, $validate) && $valid;
+            $valid = $this->saveTranslation($id_language, $runValidation, $attributeNames) && $valid;
         }
         return $valid;
     }
+    /**
+     * Validate model and translations models
+     * @param null $attributeNames
+     * @param bool $clearErrors
+     * @return bool
+     */
     public function validateAll($attributeNames = null, $clearErrors = true)
     {
         $valid = $this->owner->validate($attributeNames, $clearErrors);
-        return $this->validateAllTranslation($attributeNames, $clearErrors) && $valid;
+        return $this->validateLangs($attributeNames, $clearErrors) && $valid;
     }
-    public function loadAll($data)
-    {
-        $valid = $this->owner->load($data);
-        return $this->loadLangs($data) && $valid;
-    }
-    public function validateAllTranslation($attributeNames = null, $clearErrors = true)
+
+    /**
+     * Validate only translations models
+     * @param null $attributeNames
+     * @param bool $clearErrors
+     * @return bool
+     */
+    public function validateLangs($attributeNames = null, $clearErrors = true)
     {
         $valid = true;
         foreach (Yii::$app->getI18n()->getLanguages() as $id_language => $language) {
@@ -208,12 +232,22 @@ class TranslationBehavior extends Behavior
         }
         return $valid;
     }
+
     /**
-     * Returns translation model
+     * Load data to model and translations models
+     * @param $data
+     * @return bool
+     */
+    public function loadAll($data)
+    {
+        $valid = $this->owner->load($data);
+        return $this->loadLangs($data) && $valid;
+    }
+    /**
      * @param array $data the data array. This is usually `$_POST` or `$_GET`, but can also be any valid array
      * supplied by end user.
      * @param integer|null $language the language to return. If null, current sys language
-     * @return false|ActiveRecord
+     * @return bool
      */
     public function loadLang($data, $id_language = null)
     {
@@ -227,13 +261,12 @@ class TranslationBehavior extends Behavior
         if (isset($data[$scope][$id_language]) && !empty($data[$scope][$id_language])) {
             $model = $this->getTranslation($id_language);
             $model->setAttributes($data[$scope][$id_language]);
-            return $model;
+            return true;
         } else {
             return false;
         }
     }
     /**
-     * Returns translation model
      * @param array $data the data array. This is usually `$_POST` or `$_GET`, but can also be any valid array
      * supplied by end user.
      * @return bool
@@ -242,9 +275,7 @@ class TranslationBehavior extends Behavior
     {
         $valid = true;
         foreach (Yii::$app->getI18n()->getLanguages() as $id_language => $language) {
-            /** @var ActiveRecord $model */
-            $model = $this->loadLang($data, $id_language);
-            $valid = $model !== false && $valid;
+            $valid = $this->loadLang($data, $id_language) && $valid;
         }
         return $valid;
     }
