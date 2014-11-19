@@ -238,7 +238,6 @@ class I18N extends \yii\i18n\I18N
         $mod = ArrayHelper::remove($params,'dot');
         $nl2br = ArrayHelper::remove($params,'nl2br',$this->nl2br);
 
-
         $settings = [
             'before' => '' ,
             'after' => '',
@@ -544,13 +543,22 @@ class I18N extends \yii\i18n\I18N
 
         ActiveForm::end();
     }
+
+    /**
+     * @param $id
+     * @param $data
+     */
+    public function setLanguage($id, $data)
+    {
+        $this->languages[$id] = $data;
+    }
     /**
      * @return array|string fields|field from language table
      */
-    public function getLanguage($name = null)
+    public function getLanguage($id = null)
     {
-        if ($name !== null && isset($this->language[$name])) {
-            return $this->language[$name];
+        if ($id !== null && isset($this->languages[$id])) {
+            return $this->languages[$id];
         }
         return $this->language;
     }
