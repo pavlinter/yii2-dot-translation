@@ -119,7 +119,7 @@ class TranslationBehavior extends Behavior
     public function afterFind($event)
     {
         $this->populateTranslations();
-        $this->getTranslation($this->getLanguage());
+        $this->getTranslation();
     }
 
     /**
