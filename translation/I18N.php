@@ -406,13 +406,18 @@ class I18N extends \yii\i18n\I18N
         $request = Yii::$app->getRequest();
 
         $view->registerJs('
+            if ($.fn.button && $.fn.button.noConflict){
+                $.fn.dotBtn = $.fn.button.noConflict();
+            } else if($.fn.btn && $.fn.btn.noConflict) {
+                $.fn.dotBtn = $.fn.btn;
+            }
             $("#dot-translation-form button").on("click", function () {
 
                 var form = $(this).closest("form");
                 var hash        = form.attr("data-hash");
                 var redirect    = form.attr("data-redirect")==1;
 
-                $("#dot-btn",form).' .($this->dialog == I18N::DIALOG_JQ?'text("Loading...")':'button("loading")') . ';
+                $("#dot-btn",form).' .($this->dialog == I18N::DIALOG_JQ?'text("Loading...")':'dotBtn("loading")') . ';
 
                 $.ajax({
                     url: form.attr("action"),
@@ -436,7 +441,7 @@ class I18N extends \yii\i18n\I18N
                         }
                         dot.prev(".text-' . $this->dotClass . '").html(val);
 
-                        ' .($this->dialog == I18N::DIALOG_JQ?'$("#dots-btn-modal").dialog("close");$("#dot-btn",form).text("Change");':'var modalID = $("#dots-btn-modal").attr("data-target");$(modalID).modal("hide");$("#dot-btn",form).button("reset");') . '
+                        ' .($this->dialog == I18N::DIALOG_JQ?'$("#dots-btn-modal").dialog("close");$("#dot-btn",form).text("Change");':'var modalID = $("#dots-btn-modal").attr("data-target");$(modalID).modal("hide");$("#dot-btn",form).dotBtn("reset");') . '
                     }
                 });
 
