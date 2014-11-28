@@ -298,6 +298,15 @@ class TranslationBehavior extends Behavior
         return $this->_models[$id_language];
     }
     /**
+     * @param null $id_language
+     * @return bool
+     */
+    public function hasTranslation($id_language = null)
+    {
+        $model = $this->getTranslation($id_language);
+        return !$model->isNewRecord;
+    }
+    /**
      * Loads a specific translation model
      * @param integer $language the language to return
      * @return null|\yii\db\ActiveQuery|static
