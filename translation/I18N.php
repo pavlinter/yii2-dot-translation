@@ -92,7 +92,7 @@ class I18N extends \yii\i18n\I18N
 
         $this->changeLanguage();
 
-        if ($this->access()) {
+        if ($this->access() && !$this->isPjax()) {
 
             $view = Yii::$app->getView();
 
@@ -554,6 +554,14 @@ class I18N extends \yii\i18n\I18N
         ActiveForm::end();
     }
 
+    /**
+     * @return array|string
+     */
+    public function isPjax()
+    {
+        $headers = Yii::$app->getRequest()->getHeaders();
+        return $headers->get('X-Pjax');
+    }
     /**
      * @param $id
      * @param $data
