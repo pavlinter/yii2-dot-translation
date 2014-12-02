@@ -345,13 +345,18 @@ class I18N extends \yii\i18n\I18N
             if ($mod['dot'] === '.') {
                 $res['return'] = true;
             }
-        } elseif  ($mod['dot'] === true) {
+        } elseif ($mod['dot'] === '.' && $this->dotMode === false) {
+            $res['return'] = true;
+        } elseif ($mod['dot'] === true) {
             $res['before']  = Html::beginTag('span', ['class' => 'text-' . $options['class']]);
             $res['after']   = $this->dot    = Html::endTag('span') . Html::tag('span', $mod['dotSymbol'], ArrayHelper::merge($options, ['data-redirect' => 0]));
         } elseif ($mod['dot'] === '.') {
             $res['before']  = $this->dot;
             $res['return']  = true;
         }
+
+
+
         return $res;
     }
     /**
