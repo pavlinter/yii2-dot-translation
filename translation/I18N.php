@@ -462,6 +462,7 @@ class I18N extends \yii\i18n\I18N
                 var hash        = $el.attr("data-hash");
                 var redirect    = $el.attr("data-redirect");
                 var $textarea   = $("#dot-translation-form textarea").val("Loading...");
+                var $key        = $("#dots-modal-header #dots-modal-key-header")
 
                 $form.attr("data-redirect",redirect);
                 $form.attr("data-hash",hash);
@@ -469,7 +470,9 @@ class I18N extends \yii\i18n\I18N
                 $("#dot-translation-form #dots-inp-category").val(k.category);
                 $("#dot-translation-form #dots-inp-message").val(k.message);
 
-                $("#dots-modal-header #dots-modal-key-header").html(k.message);
+                $key.text(k.message);
+                $key.html($key.html().replace(/\n/g,"<br/>"));
+
                 $("#dots-btn-modal").' .($this->dialog == I18N::DIALOG_JQ?'dialog("open")':'trigger("click")') . ';
 
                 $.ajax({
