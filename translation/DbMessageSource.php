@@ -22,7 +22,8 @@ use yii\db\Query;
  */
 class DbMessageSource extends \yii\i18n\DbMessageSource
 {
-    public  $autoInsert = false;
+    public $autoInsert = false;
+    public $dotMode;
     private $messagesId = [];
     /**
      * Initializes the DbMessageSource component.
@@ -102,6 +103,10 @@ class DbMessageSource extends \yii\i18n\DbMessageSource
         return $result;
     }
 
+    /**
+     * @param $message
+     * @return bool
+     */
     public function getId($message)
     {
         if(isset($this->messagesId[$message]))

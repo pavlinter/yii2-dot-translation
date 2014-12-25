@@ -271,6 +271,8 @@ class I18N extends \yii\i18n\I18N
     {
         $this->dotCategoryMode = false;
         if (isset($this->translations[$category])) {
+
+
             if (isset($this->dotCategory[$category])) {
                 $this->dotCategoryMode = $this->dotCategory[$category];
             } elseif (isset($this->dotCategory['*'])) {
@@ -278,9 +280,12 @@ class I18N extends \yii\i18n\I18N
             }
             $source = $this->translations[$category];
             if ($source instanceof MessageSource) {
+                $this->dotModeSource($source);
                 return $source;
             } else {
-                return $this->translations[$category] = Yii::createObject($source);
+                $source = $this->translations[$category] = Yii::createObject($source);
+                $this->dotModeSource($source);
+                return $source;
             }
         } else {
             // try wildcard matching
@@ -294,9 +299,12 @@ class I18N extends \yii\i18n\I18N
                         $this->dotCategoryMode = $this->dotCategory[$category] = $this->dotCategory['*'];
                     }
                     if ($source instanceof MessageSource) {
+                        $this->dotModeSource($source);
                         return $source;
                     } else {
-                        return $this->translations[$category] = $this->translations[$pattern] = Yii::createObject($source);
+                        $source = $this->translations[$category] = $this->translations[$pattern] = Yii::createObject($source);
+                        $this->dotModeSource($source);
+                        return $source;
                     }
                 }
             }
@@ -307,15 +315,33 @@ class I18N extends \yii\i18n\I18N
                     $this->dotCategoryMode = $this->dotCategory['*'];
                 }
                 if ($source instanceof MessageSource) {
+                    $this->dotModeSource($source);
                     return $source;
                 } else {
-                    return $this->translations[$category] = $this->translations['*'] = Yii::createObject($source);
+                    $source = $this->translations[$category] = $this->translations['*'] = Yii::createObject($source);
+                    $this->dotModeSource($source);
+                    return $source;
                 }
             }
         }
 
         throw new InvalidConfigException("Unable to locate message source for category '$category'.");
     }
+
+
+    /**
+     * @param MessageSource $source
+     */
+    private function dotModeSource(MessageSource $source)
+    {
+        if ($this->dotCategoryMode === false && $source->hasProperty('dotMode')) {
+            if ($source->dotMode !== null) {
+                $this->dotCategoryMode = $source->dotMode;
+            }
+        }
+    }
+
+
     /**
      * Set dot mode
      */
