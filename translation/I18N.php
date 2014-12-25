@@ -376,6 +376,13 @@ class I18N extends \yii\i18n\I18N
         }
         return false;
     }
+
+    /**
+     * @param $category
+     * @param $message
+     * @return bool
+     * @throws InvalidConfigException
+     */
     public function getMessageId($category,$message)
     {
         $messageSource = $this->getMessageSource($category);
