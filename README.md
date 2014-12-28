@@ -45,19 +45,13 @@ Configuration
                 //'class' => 'pavlinter\translation\DbMessageSource',
                 //'forceTranslation' => true,
                 //'autoInsert' => true, //if message key doesn't exist in the database, message key will be created automatically
+                //'dotMode' => null, //default state: show or hide dot
             //],
         //],
         //default settings
 
         //'dialog' => 'bs', //Bootstrap Modal Or jQuery Dialog (bs or jq)
         //'access' => 'dots-control',  //user permissions or function(){ return true || false; }
-        //'dotCategory' => [ //set global settings for category
-            //'app' => true, //show dot after text(default)
-            //example:
-            //'app*' => true, //In this case we're handling everything that begins with app
-            //'app/menu' => false, //disable dot
-            //'*' => true, //settings for all categories
-        //],
         //'nl2br' => true,
         //'dotClass' => 'dot-translation',
         //'dotSymbol' => '&bull;',
@@ -112,7 +106,7 @@ echo Yii::t('app', 'Hello world.'); used global settings
 //individual adjustment
 echo Yii::t('app', 'Hi {username}.', ['username' => 'Bob', 'dot' => true]); //enable dot
 
-echo Yii::t('app', 'Hello world.', ['dot' => false , 'nl2br' => false]); //disable dot and disable nl2br filter
+echo Yii::t('app', 'Hello world.', ['dot' => false , 'nl2br' => false]); //or 'br' => false //disable dot and disable nl2br filter
 
 echo Html::submitInput(Yii::t('app', 'Submit', ['dot' => false])); //disable dot
 
@@ -127,9 +121,10 @@ echo Yii::t('app', 'Submit', ['dot' => '.']); //show only dot
 ```php
 Yii::$app->i18n->disableDot(); //force disable all dots
 
-echo Breadcrumbs::widget([
-    'links' => $this->params['breadcrumbs'],
-]);
+echo Yii::t('app', 'Submit'); //hidden dot
+echo Yii::t('app', 'Submit', ['dot' => true]); //force enable dot
 
 Yii::$app->i18n->enableDot(); //enable again
+//OR set default settings
+Yii::$app->i18n->resetDot();
 ```

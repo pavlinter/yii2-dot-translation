@@ -31,7 +31,6 @@ class I18N extends \yii\i18n\I18N
     const DIALOG_BS = 'bs';
     const DIALOG_JQ = 'jq';
 
-    public $dotCategory         = ['app' => true];
     public $dotClass            = 'dot-translation';
     public $dotSymbol           = '&bull;';
 
@@ -56,7 +55,6 @@ class I18N extends \yii\i18n\I18N
     public $dialog              = I18N::DIALOG_BS; // bs or jq
 
     private $dotMode            = null;
-    private $dotCategoryMode    = false;
     private $language           = null;
     private $languageId         = null;
     private $languages          = []; //list languages
@@ -231,12 +229,13 @@ class I18N extends \yii\i18n\I18N
         $messageSource = $this->getMessageSource($category);
         $translation = $messageSource->translate($category, $message, $language);
 
-        if ($this->dotMode!==null) {
-            $this->dotCategoryMode = $this->dotMode;
-        }
+        $mod = ArrayHelper::remove($params, 'dot');
 
-        $mod = ArrayHelper::remove($params,'dot');
-        $nl2br = ArrayHelper::remove($params,'nl2br',$this->nl2br);
+        if (isset($params['br'])) {
+            $nl2br = ArrayHelper::remove($params, 'br');
+        } else {
+            $nl2br = ArrayHelper::remove($params, 'nl2br' , $this->nl2br);
+        }
 
         $settings = [
             'before' => '' ,
@@ -244,7 +243,7 @@ class I18N extends \yii\i18n\I18N
             'return' => false,
         ];
 
-        $settings = ArrayHelper::merge($settings,$this->setDot($category,$message,$params,$mod));
+        $settings = ArrayHelper::merge($settings,$this->setDot($messageSource, $category, $message, $params, $mod));
         if ($settings['return']) {
             return $settings['before'].$settings['after'];
         }
@@ -269,119 +268,77 @@ class I18N extends \yii\i18n\I18N
      */
     public function getMessageSource($category)
     {
-        $this->dotCategoryMode = false;
         if (isset($this->translations[$category])) {
-
-
-            if (isset($this->dotCategory[$category])) {
-                $this->dotCategoryMode = $this->dotCategory[$category];
-            } elseif (isset($this->dotCategory['*'])) {
-                $this->dotCategoryMode = $this->dotCategory['*'];
-            }
             $source = $this->translations[$category];
-            if ($source instanceof MessageSource) {
-                $this->dotModeSource($source);
-                return $source;
-            } else {
+            if (!($source instanceof MessageSource)) {
                 $source = $this->translations[$category] = Yii::createObject($source);
-                $this->dotModeSource($source);
-                return $source;
             }
+            return $source;
         } else {
             // try wildcard matching
             foreach ($this->translations as $pattern => $source) {
                 if (strpos($pattern, '*') > 0 && strpos($category, rtrim($pattern, '*')) === 0) {
-                    if (isset($this->dotCategory[$category])) {
-                        $this->dotCategoryMode = $this->dotCategory[$category];
-                    } elseif (isset($this->dotCategory[$pattern])) {
-                        $this->dotCategoryMode = $this->dotCategory[$category] = $this->dotCategory[$pattern];
-                    } elseif (isset($this->dotCategory['*'])) {
-                        $this->dotCategoryMode = $this->dotCategory[$category] = $this->dotCategory['*'];
-                    }
-                    if ($source instanceof MessageSource) {
-                        $this->dotModeSource($source);
-                        return $source;
-                    } else {
+                    if (!($source instanceof MessageSource)) {
                         $source = $this->translations[$category] = $this->translations[$pattern] = Yii::createObject($source);
-                        $this->dotModeSource($source);
-                        return $source;
                     }
+                    return $source;
                 }
             }
             // match '*' in the last
             if (isset($this->translations['*'])) {
                 $source = $this->translations['*'];
-                if (isset($this->dotCategory['*'])) {
-                    $this->dotCategoryMode = $this->dotCategory['*'];
-                }
-                if ($source instanceof MessageSource) {
-                    $this->dotModeSource($source);
-                    return $source;
-                } else {
+                if (!($source instanceof MessageSource)) {
                     $source = $this->translations[$category] = $this->translations['*'] = Yii::createObject($source);
-                    $this->dotModeSource($source);
-                    return $source;
                 }
+                return $source;
             }
         }
 
         throw new InvalidConfigException("Unable to locate message source for category '$category'.");
     }
 
-
     /**
-     * @param MessageSource $source
+     * @param $messageSource
+     * @param $category
+     * @param $message
+     * @param $params
+     * @param $mod
+     * @return array
      */
-    private function dotModeSource(MessageSource $source)
+    public function setDot($messageSource, $category, $message, $params, $mod)
     {
-        if ($this->dotCategoryMode === false && $source->hasProperty('dotMode')) {
-            if ($source->dotMode !== null) {
-                $this->dotCategoryMode = $source->dotMode;
+        if ($mod === null) {
+            if ($this->dotMode !== null) {
+                $mod = $this->dotMode;
+            } else {
+                if ($messageSource instanceof DbMessageSource) {
+                    $mod = $messageSource->dotMode;
+                }
             }
         }
-    }
-
-
-    /**
-     * Set dot mode
-     */
-    public function setDot($category,$message,$params,$mod)
-    {
-        $res = [];
-        if (!is_array($mod)) {
-            $mod = ['dot' => ($mod === null?$this->dotCategoryMode:$mod)];
-
-        }
-
-        $mod = ArrayHelper::merge([
-            'dot' => $this->dotCategoryMode,
-            'dotSymbol' => $this->dotSymbol,
-        ],$mod);
 
         $options = [
             'class' => $this->dotClass,
             'data-keys' => Json::encode(['category' => $category, 'message' => $message]),
             'data-redirect' => 1,
-            'data-hash' => $this->getHash($category.$message),
+            'data-hash' => $this->getHash($category . $message),
             'data-params'=> Json::encode($params),
         ];
-        $this->dot = Html::tag('span', $mod['dotSymbol'], $options);
-
+        $this->dot = Html::tag('span', $this->dotSymbol, $options);
+        $res = [];
         if (!$this->showDot) {
-            if ($mod['dot'] === '.') {
+            if ($mod === '.') {
                 $res['return'] = true;
             }
-        } elseif ($mod['dot'] === '.' && $this->dotMode === false) {
+        } elseif ($mod === '.' && $this->dotMode === false) {
             $res['return'] = true;
-        } elseif ($mod['dot'] === true) {
+        } elseif ($mod === true) {
             $res['before']  = Html::beginTag('span', ['class' => 'text-' . $options['class']]);
-            $res['after']   = $this->dot    = Html::endTag('span') . Html::tag('span', $mod['dotSymbol'], ArrayHelper::merge($options, ['data-redirect' => 0]));
-        } elseif ($mod['dot'] === '.') {
+            $res['after']   = $this->dot = Html::endTag('span') . Html::tag('span', $this->dotSymbol, ArrayHelper::merge($options, ['data-redirect' => 0]));
+        } elseif ($mod === '.') {
             $res['before']  = $this->dot;
             $res['return']  = true;
         }
-
-
 
         return $res;
     }
@@ -419,8 +376,11 @@ class I18N extends \yii\i18n\I18N
         }
         return false;
     }
+
     /**
      * Generate hash for message;
+     * @param $data
+     * @return string
      */
     public function getHash($data)
     {
@@ -567,6 +527,10 @@ class I18N extends \yii\i18n\I18N
             }
         ');
     }
+
+    /**
+     *
+     */
     private function bodyDialog()
     {
         ActiveForm::begin([
@@ -606,7 +570,9 @@ class I18N extends \yii\i18n\I18N
     {
         $this->languages[$id] = $data;
     }
+
     /**
+     * @param null $id
      * @return array|string fields|field from language table
      */
     public function getLanguage($id = null)
@@ -648,9 +614,16 @@ class I18N extends \yii\i18n\I18N
         $this->dotMode = false;
     }
     /**
-     * Set global previous settings
+     * Force enable all dots
      */
     public function enableDot()
+    {
+        $this->dotMode = true;
+    }
+    /**
+     * Set global previous settings
+     */
+    public function resetDot()
     {
         $this->dotMode = null;
     }
