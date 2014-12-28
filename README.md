@@ -124,7 +124,6 @@ Yii::$app->i18n->disableDot(); //force disable all dots
 echo Yii::t('app', 'Submit'); //hidden dot
 echo Yii::t('app', 'Submit', ['dot' => true]); //force enable dot
 
-Yii::$app->i18n->enableDot(); //enable again
-//OR set default settings
-Yii::$app->i18n->resetDot();
+Yii::$app->i18n->resetDot(); //reset settings
+Yii::$app->i18n->enableDot();//OR enable dot
 ```
