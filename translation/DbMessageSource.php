@@ -55,9 +55,30 @@ class DbMessageSource extends \yii\i18n\DbMessageSource
      * @return array the loaded messages. The keys are original messages, and the values
      * are translated messages.
      */
-    protected function loadMessages($category, $language)
+    public function loadMessages($category, $language = null)
     {
-        if ($this->enableCaching) {
+        $I18n = Yii::$app->getI18n();
+        $languages = $I18n->getLanguages();
+        $newLanguage = null;
+        if (is_numeric($language)) {
+            if (isset($languages[$language])) {
+                $newLanguage = $languages[$language];
+            }
+        } else if (is_string($language)) {
+            foreach ($languages as $id => $lang) {
+                if (isset($lang[$I18n->langColCode])) {
+                    $newLanguage = $id;
+                    break;
+                }
+            }
+        }
+        if ($newLanguage === null) {
+            $language = $I18n->getId();
+        } else {
+            $language = $newLanguage;
+        }
+
+        if ($this->enableCaching && false) {
             $key = [
                 __CLASS__,
                 $category,
@@ -89,13 +110,13 @@ class DbMessageSource extends \yii\i18n\DbMessageSource
             ->from([$this->sourceMessageTable . ' t1'])
             ->leftJoin($this->messageTable . ' t2','t1.id = t2.id AND t2.language_id = :language')
             ->where('t1.category = :category')
-            ->params([':category' => $category, ':language' => Yii::$app->getI18n()->getId()]);
+            ->params([':category' => $category, ':language' => $language]);
 
         $messages = $mainQuery->createCommand($this->db)->queryAll();
 
         $result = [];
         foreach ($messages as $message) {
-            if ($message['translation']!==null) {
+            if ($message['translation'] !== null) {
                 $result[$message['message']] = $message['translation'];
             }
             $this->messagesId[$message['message']] = $message['id'];
@@ -114,5 +135,13 @@ class DbMessageSource extends \yii\i18n\DbMessageSource
             return $this->messagesId[$message];
         }
         return false;
+    }
+
+    /**
+     * @return array
+     */
+    public function getMessages()
+    {
+        return $this->messagesId;
     }
 }

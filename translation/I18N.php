@@ -91,53 +91,62 @@ class I18N extends \yii\i18n\I18N
         $this->changeLanguage();
 
         if ($this->access() && !$this->isPjax()) {
-
             $view = Yii::$app->getView();
+            $this->register($view);
 
-            $view->on($view::EVENT_END_BODY, function ($event) {
-                $this->registerAssets();
-                if ($this->htmlScope) {
-                    echo Html::beginTag('span',['class' => $this->htmlScopeClass]);
-                }
-
-                if ($this->dialog == I18N::DIALOG_BS) {
-                    \yii\bootstrap\Modal::begin([
-                        'header' => '<div id="dots-modal-header" style="padding-right: 10px;"><div id="dots-modal-cat-header"></div><div id="dots-modal-key-header"></div></div>',
-                        'toggleButton' => [
-                            'class' => 'hide',
-                            'id' => 'dots-btn-modal',
-                        ],
-                    ]);
-
-                        $this->bodyDialog();
-
-                    \yii\bootstrap\Modal::end();
-                } else if ($this->dialog == I18N::DIALOG_JQ) {
-                    \yii\jui\Dialog::begin([
-                        'options' => [
-                            'id' => 'dots-btn-modal',
-                        ],
-                        'clientOptions' => [
-                            'autoOpen' => false,
-                            'width' => '50%',
-                        ],
-                    ]);
-
-                        $this->bodyDialog();
-
-                    \yii\jui\Dialog::end();
-                }
-
-
-
-                if ($this->htmlScope) {
-                    echo Html::endTag('span');
-                }
-
-            });
-            $this->showDot = true;
         }
     }
+
+    /**
+     * @param $view
+     */
+    public function register($view)
+    {
+        $view->on($view::EVENT_END_BODY, function ($event) {
+
+            $this->registerAssets($event->sender);
+            if ($this->htmlScope) {
+                echo Html::beginTag('span',['class' => $this->htmlScopeClass]);
+            }
+
+            if ($this->dialog == I18N::DIALOG_BS) {
+                \yii\bootstrap\Modal::begin([
+                    'header' => '<div id="dots-modal-header" style="padding-right: 10px;"><div id="dots-modal-cat-header"></div><div id="dots-modal-key-header"></div></div>',
+                    'toggleButton' => [
+                        'class' => 'hide',
+                        'id' => 'dots-btn-modal',
+                    ],
+                ]);
+
+                $this->bodyDialog();
+
+                \yii\bootstrap\Modal::end();
+            } else if ($this->dialog == I18N::DIALOG_JQ) {
+                \yii\jui\Dialog::begin([
+                    'options' => [
+                        'id' => 'dots-btn-modal',
+                    ],
+                    'clientOptions' => [
+                        'autoOpen' => false,
+                        'width' => '50%',
+                    ],
+                ]);
+
+                $this->bodyDialog();
+
+                \yii\jui\Dialog::end();
+            }
+
+
+
+            if ($this->htmlScope) {
+                echo Html::endTag('span');
+            }
+
+        });
+        $this->showDot = true;
+    }
+
     /**
      * Change language through $_GET params.
      */
@@ -298,6 +307,34 @@ class I18N extends \yii\i18n\I18N
     }
 
     /**
+     * @param $category
+     * @param array $options
+     * @return bool|string
+     * @throws InvalidConfigException
+     */
+    public function getOnlyDots($category, $options = [])
+    {
+        /* @var $source \pavlinter\translation\DbMessageSource */
+        $source = $this->getMessageSource($category);
+        if ($source instanceof DbMessageSource) {
+
+            $loop = ArrayHelper::remove($options, 'loop', '&nbsp;');
+            $dot = ArrayHelper::merge([
+                'dot' => '.',
+                'dotRedirect' => 0,
+            ], ArrayHelper::remove($options, 'dot', []));
+
+            $messages = $source->getMessages();
+            $res = '';
+            foreach ($messages as $m => $id) {
+                $res .= Yii::t($category, $m, $dot) . $loop;
+            }
+            return $res;
+        }
+        return false;
+    }
+
+    /**
      * @param $messageSource
      * @param $category
      * @param $message
@@ -307,6 +344,8 @@ class I18N extends \yii\i18n\I18N
      */
     public function setDot($messageSource, $category, $message, $params, $mod)
     {
+        $redirect = ArrayHelper::remove($params, 'dotRedirect', 1);
+
         if ($mod === null) {
             if ($this->dotMode !== null) {
                 $mod = $this->dotMode;
@@ -320,7 +359,7 @@ class I18N extends \yii\i18n\I18N
         $options = [
             'class' => $this->dotClass,
             'data-keys' => Json::encode(['category' => $category, 'message' => $message]),
-            'data-redirect' => 1,
+            'data-redirect' => $redirect,
             'data-hash' => $this->getHash($category . $message),
             'data-params'=> Json::encode($params),
         ];
@@ -389,9 +428,8 @@ class I18N extends \yii\i18n\I18N
     /**
      * Register client side
      */
-    public function registerAssets()
+    public function registerAssets($view)
     {
-        $view = Yii::$app->getView();
         $script = '';
         if ($this->dialog == I18N::DIALOG_JQ) {
             $script = '
@@ -449,6 +487,7 @@ class I18N extends \yii\i18n\I18N
 
             $(document).on("click",".'.$this->dotClass.'",function () {
                 '.$script.'
+                console.log("dd");
                 var $form       = $("#dot-translation-form");
                 var $el         = $(this);
                 var k           = $.parseJSON($el.attr("data-keys"));
