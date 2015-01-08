@@ -487,7 +487,6 @@ class I18N extends \yii\i18n\I18N
 
             $(document).on("click",".'.$this->dotClass.'",function () {
                 '.$script.'
-                console.log("dd");
                 var $form       = $("#dot-translation-form");
                 var $el         = $(this);
                 var k           = $.parseJSON($el.attr("data-keys"));
