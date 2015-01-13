@@ -88,7 +88,7 @@ class I18N extends \yii\i18n\I18N
             return true;
         }
 
-        $this->changeLanguage();
+        $this->initLanguage();
 
         if ($this->access() && !$this->isPjax()) {
             $view = Yii::$app->getView();
@@ -148,9 +148,35 @@ class I18N extends \yii\i18n\I18N
     }
 
     /**
+     * @param $lang
+     * @return bool
+     */
+    public function changeLanguage($lang)
+    {
+        if (is_numeric($lang)) {
+            if (isset($this->languages[$lang])) {
+                Yii::$app->language = $this->languages[$lang][$this->langColCode];
+                $this->language     = $this->languages[$lang];
+                $this->languageId   = $this->languages[$lang]['id'];
+                return true;
+            }
+        } else if(is_string($lang)) {
+            foreach ($this->languages as $language) {
+                if ($language[$this->langColCode] === $lang) {
+                    Yii::$app->language = $language[$this->langColCode];
+                    $this->language     = $language;
+                    $this->languageId   = $language['id'];
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
      * Change language through $_GET params.
      */
-    public function changeLanguage()
+    public function initLanguage()
     {
         $this->language = Yii::$app->language;
         $key = self::className().'Languages';

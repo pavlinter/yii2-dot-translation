@@ -55,23 +55,29 @@ class DbMessageSource extends \yii\i18n\DbMessageSource
      * @return array the loaded messages. The keys are original messages, and the values
      * are translated messages.
      */
-    public function loadMessages($category, $language = null)
+    public function loadMessages($category, $language)
     {
         $I18n = Yii::$app->getI18n();
         $languages = $I18n->getLanguages();
         $newLanguage = null;
+
         if (is_numeric($language)) {
             if (isset($languages[$language])) {
-                $newLanguage = $languages[$language];
+                $newLanguage = $languages[$language]['id'];
             }
         } else if (is_string($language)) {
-            foreach ($languages as $id => $lang) {
-                if (isset($lang[$I18n->langColCode])) {
-                    $newLanguage = $id;
-                    break;
+            if ($language !== Yii::$app->language) {
+                foreach ($languages as $id => $lang) {
+                    if (isset($lang[$I18n->langColCode])) {
+                        $newLanguage = $id;
+                        break;
+                    }
                 }
+            } else {
+                $newLanguage = null;
             }
         }
+
         if ($newLanguage === null) {
             $language = $I18n->getId();
         } else {
