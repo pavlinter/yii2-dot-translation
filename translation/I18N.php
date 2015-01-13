@@ -345,6 +345,8 @@ class I18N extends \yii\i18n\I18N
     public function setDot($messageSource, $category, $message, $params, $mod)
     {
         $redirect = ArrayHelper::remove($params, 'dotRedirect', 1);
+        $dotHash = ArrayHelper::remove($params, 'dotHash', $this->getHash($category . $message));
+        $dotTo = ArrayHelper::remove($params, 'dotTo', '');
 
         if ($mod === null) {
             if ($this->dotMode !== null) {
@@ -360,9 +362,14 @@ class I18N extends \yii\i18n\I18N
             'class' => $this->dotClass,
             'data-keys' => Json::encode(['category' => $category, 'message' => $message]),
             'data-redirect' => $redirect,
-            'data-hash' => $this->getHash($category . $message),
+            'data-hash' => $dotHash,
             'data-params'=> Json::encode($params),
         ];
+
+        if ($dotTo) {
+            $options['data-to'] = $dotTo;
+        }
+
         $this->dot = Html::tag('span', $this->dotSymbol, $options);
         $res = [];
         if (!$this->showDot) {
@@ -449,8 +456,9 @@ class I18N extends \yii\i18n\I18N
             }
             $("#dot-translation-form button").on("click", function () {
 
-                var form = $(this).closest("form");
+                var form        = $(this).closest("form");
                 var hash        = form.attr("data-hash");
+                var dotTo       = form.attr("data-to");
                 var redirect    = form.attr("data-redirect")==1;
 
                 $("#dot-btn",form).' .($this->dialog == I18N::DIALOG_JQ?'text("Loading...")':'dotBtn("loading")') . ';
@@ -461,22 +469,24 @@ class I18N extends \yii\i18n\I18N
                     dataType: "json",
                     data: form.serialize(),
                 }).done(function(d) {
-                    if (redirect) {
+                    if (!dotTo && redirect) {
                         location.href = "'.Url::to('').'";
                         return false;
                     }
+
                     if (d.r) {
                         var val = d.message;
-                        var dot = $("[data-hash=\'" + hash + "\']");
-                        var params = dot.attr("data-params");
+                        var $dot = $("[data-hash=\'" + hash + "\']").not(form);
+                        var $dotTo = $("[data-hash=\'" + dotTo + "\']");
+                        var params = $dot.attr("data-params");
                         if (params) {
                             var o = jQuery.parseJSON(params);
                             for (m in o) {
                                 val = val.replace("{" + m + "}",o[m]);
                             }
                         }
-                        dot.prev(".text-' . $this->dotClass . '").html(val);
-
+                        $dot.prev(".text-' . $this->dotClass . '").html(val);
+                        $dotTo.html(val);
                         ' .($this->dialog == I18N::DIALOG_JQ?'$("#dots-btn-modal").dialog("close");$("#dot-btn",form).text("Change");':'var modalID = $("#dots-btn-modal").attr("data-target");$(modalID).modal("hide");$("#dot-btn",form).dotBtn("reset");') . '
                     }
                 });
@@ -492,16 +502,20 @@ class I18N extends \yii\i18n\I18N
                 var k           = $.parseJSON($el.attr("data-keys"));
                 var hash        = $el.attr("data-hash");
                 var redirect    = $el.attr("data-redirect");
+                var dotTo       = $el.attr("data-to");
                 var $textarea   = $("#dot-translation-form textarea").val("Loading...");
                 var $key        = $("#dots-modal-header #dots-modal-key-header")
-
+                var viewMsg     = k.message.replace(/<br\s*[\/]?>/gi, "\n");
                 $form.attr("data-redirect",redirect);
-                $form.attr("data-hash",hash);
+                $form.attr("data-hash", hash);
+                $form.attr("data-to", dotTo);
+
+                k.message = encodeURIComponent(k.message);
 
                 $("#dot-translation-form #dots-inp-category").val(k.category);
                 $("#dot-translation-form #dots-inp-message").val(k.message);
 
-                $key.text(k.message);
+                $key.text(viewMsg);
                 $key.html($key.html().replace(/\n/g,"<br/>"));
 
                 $("#dots-btn-modal").' .($this->dialog == I18N::DIALOG_JQ?'dialog("open")':'trigger("click")') . ';

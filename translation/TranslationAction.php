@@ -69,7 +69,7 @@ class TranslationAction extends Action
         $languages = Yii::$app->i18n->getLanguages();
 
         $category       = Yii::$app->request->post('category');
-        $message        = Yii::$app->request->post('message');
+        $message        = rawurldecode(Yii::$app->request->post('message'));
         $translations   = Yii::$app->request->post('translation');
 
         if ($translations) {
