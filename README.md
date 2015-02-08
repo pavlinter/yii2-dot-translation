@@ -127,3 +127,8 @@ echo Yii::t('app', 'Submit', ['dot' => true]); //force enable dot
 Yii::$app->i18n->resetDot(); //reset settings
 Yii::$app->i18n->enableDot();//OR enable dot
 ```
+
+```php
+//Add description variables to popup.
+echo Yii::t('app', 'Count: ', ['dot' => true, 'var' => ['count' => 'Count email', 'owner']]);
+```

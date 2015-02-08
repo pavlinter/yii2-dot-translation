@@ -368,11 +368,14 @@ class I18N extends \yii\i18n\I18N
      * @param $mod
      * @return array
      */
-    public function setDot($messageSource, $category, $message, $params, $mod)
+    public function setDot($messageSource, $category, $message, &$params, $mod)
     {
         $redirect = ArrayHelper::remove($params, 'dotRedirect', 1);
         $dotHash = ArrayHelper::remove($params, 'dotHash', $this->getHash($category . $message));
         $dotTo = ArrayHelper::remove($params, 'dotTo', '');
+        $var = ArrayHelper::remove($params, 'var', []);
+
+
 
         if ($mod === null) {
             if ($this->dotMode !== null) {
@@ -389,6 +392,7 @@ class I18N extends \yii\i18n\I18N
             'data-keys' => Json::encode(['category' => $category, 'message' => $message]),
             'data-redirect' => $redirect,
             'data-hash' => $dotHash,
+            'data-var' => Json::encode($var),
             'data-params'=> Json::encode($params),
         ];
 
@@ -525,8 +529,10 @@ class I18N extends \yii\i18n\I18N
             $(document).on("click",".'.$this->dotClass.'",function () {
                 '.$script.'
                 var $form       = $("#dot-translation-form");
+                var $varCont    = $("#dots-variables");
                 var $el         = $(this);
                 var k           = $.parseJSON($el.attr("data-keys"));
+                var variables   = $.parseJSON($el.attr("data-var"));
                 var hash        = $el.attr("data-hash");
                 var redirect    = $el.attr("data-redirect");
                 var dotTo       = $el.attr("data-to");
@@ -537,10 +543,25 @@ class I18N extends \yii\i18n\I18N
                 $form.attr("data-hash", hash);
                 $form.attr("data-to", dotTo);
 
+                $varCont.hide();
+
                 k.message = encodeURIComponent(k.message);
 
                 $("#dot-translation-form #dots-inp-category").val(k.category);
                 $("#dot-translation-form #dots-inp-message").val(k.message);
+
+                if(variables){
+                    for(v in variables){
+                        if($.isNumeric(v)){
+                            $varCont.append("<div class=\"dots-var\">{" + variables[v] +"}</div>");
+                        } else {
+                            $varCont.append("<div class=\"dots-var\">{" + v + "} - " + variables[v] + "</div>");
+                        }
+
+                    }
+                    $varCont.show();
+                }
+
 
                 $key.text(viewMsg);
                 $key.html($key.html().replace(/\n/g,"<br/>"));
@@ -588,6 +609,11 @@ class I18N extends \yii\i18n\I18N
                 cursor: pointer;
                 text-decoration: none;
             }
+            #dots-variables{
+                font-size: 11px;
+                padding-bottom: 5px;
+                margin-bottom: 10px;
+            }
             #dots-modal-header #dots-modal-cat-header{
                 text-align: center;
                 border-bottom: 1px dashed silver;
@@ -619,6 +645,7 @@ class I18N extends \yii\i18n\I18N
         echo Html::tag('div',null,['id' => 'dots-filter']);
         echo Html::hiddenInput('category', '', ['id' => 'dots-inp-category']);
         echo Html::hiddenInput('message', '', ['id' => 'dots-inp-message']);
+        echo Html::tag('div', null ,['id' => 'dots-variables']);
         foreach ($this->languages as $id_language => $language) {
 
             echo Html::beginTag('div', ['class' => 'form-group']);
