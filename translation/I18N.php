@@ -465,6 +465,7 @@ class I18N extends \yii\i18n\I18N
     {
         $script = '';
         if ($this->dialog == I18N::DIALOG_JQ) {
+            DialogAsset::register(Yii::$app->getView());
             $script = '
                 if($("#dots-modal-header").size() == 0){
                     $("#dots-btn-modal").closest(".ui-dialog").find(".ui-dialog-title").html("<div id=\"dots-modal-header\"><div id=\"dots-modal-cat-header\"></div><div id=\"dots-modal-key-header\"></div></div>");
@@ -627,7 +628,7 @@ class I18N extends \yii\i18n\I18N
                 'id' => 'dot-translation-' . $id_language]);
             echo Html::endTag('div');
         }
-        echo Html::submitButton('Change', ['class' => 'btn btn-success', 'id' => 'dot-btn']);
+        echo Html::submitButton(Yii::t("app/i18n-dot", "Change", ['dot' => false]), ['class' => 'btn btn-primary', 'id' => 'dot-btn']);
 
         ActiveForm::end();
     }
