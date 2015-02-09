@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @copyright Copyright &copy; Pavels Radajevs, 2014
+ * @copyright Copyright &copy; Pavels Radajevs, 2015
  * @package yii2-dot-translation
  * @version 1.1.0
  */
@@ -22,9 +22,7 @@ use yii\caching\DbDependency;
 use yii\i18n\MessageSource;
 
 /**
- *
  * @author Pavels Radajevs <pavlinter@gmail.com>
- * @since 1.0
  */
 class I18N extends \yii\i18n\I18N
 {

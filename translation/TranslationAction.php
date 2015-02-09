@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @copyright Copyright &copy; Pavels Radajevs, 2014
+ * @copyright Copyright &copy; Pavels Radajevs, 2015
  * @package yii2-dot-translation
  * @version 1.1.0
  */
@@ -18,9 +18,7 @@ use yii\web\Response;
 use yii\web\ForbiddenHttpException;
 
 /**
- *
  * @author Pavels Radajevs <pavlinter@gmail.com>
- * @since 1.0
  */
 class TranslationAction extends Action
 {

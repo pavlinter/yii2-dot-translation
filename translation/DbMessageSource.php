@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @copyright Copyright &copy; Pavels Radajevs, 2014
+ * @copyright Copyright &copy; Pavels Radajevs, 2015
  * @package yii2-dot-translation
  * @version 1.1.0
  */
@@ -9,16 +9,10 @@
 namespace pavlinter\translation;
 
 use Yii;
-use yii\base\InvalidConfigException;
-use yii\di\Instance;
-use yii\caching\Cache;
-use yii\db\Connection;
 use yii\db\Query;
 
 /**
- *
  * @author Pavels Radajevs <pavlinter@gmail.com>
- * @since 1.0
  */
 class DbMessageSource extends \yii\i18n\DbMessageSource
 {

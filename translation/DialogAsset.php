@@ -9,7 +9,7 @@
 namespace pavlinter\translation;
 
 /**
- * Class DialogAsset
+ * @author Pavels Radajevs <pavlinter@gmail.com>
  */
 class DialogAsset extends \yii\web\AssetBundle
 {

@@ -1,7 +1,9 @@
 <?php
+
 /**
- * @copyright Copyright &copy; Pavels Radajevs, 2014
+ * @copyright Copyright &copy; Pavels Radajevs, 2015
  * @package yii2-dot-translation
+ * @version 1.1.0
  */
 
 namespace pavlinter\translation;
@@ -13,9 +15,7 @@ use yii\base\Event;
 use yii\db\ActiveRecord;
 
 /**
- *
  * @author Pavels Radajevs <pavlinter@gmail.com>
- * @commit c79ab7cf9d77cf107ce060323a0b1fb1ec01c505
  */
 class TranslationBehavior extends Behavior
 {
