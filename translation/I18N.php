@@ -177,7 +177,7 @@ class I18N extends \yii\i18n\I18N
     public function initLanguage()
     {
         $this->language = Yii::$app->language;
-        $key = self::className().'Languages';
+        $key = static::className().'Languages';
         $this->languages = Yii::$app->cache->get($key);
 
         if ($this->languages === false) {
