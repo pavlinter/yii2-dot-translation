@@ -151,6 +151,15 @@ class TranslationBehavior extends Behavior
     }
 
     /**
+     * Set language scenario
+     * @param $scenario
+     */
+    public function setLangScenario($scenario)
+    {
+        $this->scenario = $scenario;
+    }
+
+    /**
      * Returns current models' language. If null, will return app's configured language.
      * @return string
      */
