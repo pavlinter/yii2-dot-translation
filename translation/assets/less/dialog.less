@@ -27,7 +27,7 @@
     -moz-border-radius: 5px;
     border-radius: 5px;
 
-    background: rgb(206,206,206); /* Old browsers */
+    background: #CECECE; /* Old browsers */
     background: -moz-linear-gradient(top,  rgba(206,206,206,1) 0%, rgba(170,170,170,1) 100%); /* FF3.6+ */
     background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(206,206,206,1)), color-stop(100%,rgba(170,170,170,1))); /* Chrome,Safari4+ */
     background: -webkit-linear-gradient(top,  rgba(206,206,206,1) 0%,rgba(170,170,170,1) 100%); /* Chrome10+,Safari5.1+ */
@@ -35,7 +35,9 @@
     background: -ms-linear-gradient(top,  rgba(206,206,206,1) 0%,rgba(170,170,170,1) 100%); /* IE10+ */
     background: linear-gradient(to bottom,  rgba(206,206,206,1) 0%,rgba(170,170,170,1) 100%); /* W3C */
     filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#cecece', endColorstr='#aaaaaa',GradientType=0 ); /* IE6-9 */
-
+    &:disabled{
+      color: #8A8A8A;
+    }
   }
   #dots-variables{
     margin-bottom: 0px;
