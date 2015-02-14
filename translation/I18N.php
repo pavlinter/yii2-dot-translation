@@ -478,11 +478,11 @@ class I18N extends \yii\i18n\I18N
         $request = Yii::$app->getRequest();
 
         $view->registerJs('
-            if ($.fn.button && $.fn.button.noConflict){
-                $.fn.dotBtn = $.fn.button.noConflict();
-            } else if($.fn.btn && $.fn.btn.noConflict) {
-                $.fn.dotBtn = $.fn.btn;
-            }
+            var dotBtn = {
+                text: "' . Yii::t("app/i18n-dot", "Change", ['dot' => false]) . '",
+                loading : "' . Yii::t("app/i18n-dot", "Loading...", ['dot' => false]) . '"
+            };
+
             $("#dot-translation-form button").on("click", function () {
 
                 var form        = $(this).closest("form");
@@ -490,7 +490,7 @@ class I18N extends \yii\i18n\I18N
                 var dotTo       = form.attr("data-to");
                 var redirect    = form.attr("data-redirect")==1;
 
-                $("#dot-btn",form).' .($this->dialog == I18N::DIALOG_JQ?'text("Loading...")':'dotBtn("loading")') . ';
+                $("#dot-btn",form).prop("disabled", true).text(dotBtn.loading);
 
                 $.ajax({
                     url: form.attr("action"),
@@ -515,8 +515,9 @@ class I18N extends \yii\i18n\I18N
                             }
                         }
                         $dot.prev(".text-' . $this->dotClass . '").html(val);
+                        $("#dot-btn",form).text(dotBtn.text).prop("disabled", false);
                         $dotTo.html(val);
-                        ' .($this->dialog == I18N::DIALOG_JQ?'$("#dots-btn-modal").dialog("close");$("#dot-btn",form).text("Change");':'var modalID = $("#dots-btn-modal").attr("data-target");$(modalID).modal("hide");$("#dot-btn",form).dotBtn("reset");') . '
+                        ' .($this->dialog == I18N::DIALOG_JQ?'$("#dots-btn-modal").dialog("close");':'var modalID = $("#dots-btn-modal").attr("data-target");$(modalID).modal("hide");') . '
                     }
                 });
 
@@ -534,7 +535,7 @@ class I18N extends \yii\i18n\I18N
                 var hash        = $el.attr("data-hash");
                 var redirect    = $el.attr("data-redirect");
                 var dotTo       = $el.attr("data-to");
-                var $textarea   = $("#dot-translation-form textarea").val("Loading...");
+                var $textarea   = $("#dot-translation-form textarea").val(dotBtn.loading);
                 var $key        = $("#dots-modal-header #dots-modal-key-header")
                 var viewMsg     = k.message.replace(/<br\s*[\/]?>/gi, "\n");
                 $form.attr("data-redirect",redirect);
