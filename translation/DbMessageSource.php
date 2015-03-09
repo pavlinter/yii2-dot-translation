@@ -18,6 +18,7 @@ class DbMessageSource extends \yii\i18n\DbMessageSource
 {
     public $autoInsert = false;
     public $dotMode;
+    public $cachingDuration = 3600;
     private $messagesId = [];
     /**
      * Initializes the DbMessageSource component.
@@ -28,11 +29,19 @@ class DbMessageSource extends \yii\i18n\DbMessageSource
         if ($this->autoInsert) {
             $this->on(self::EVENT_MISSING_TRANSLATION,function($event){
                 if (!isset($this->messagesId[$event->message])) {
-                    Yii::$app->db->createCommand()->insert($this->sourceMessageTable,[
+                    $query = new Query();
+                    $id = $query->select("id")->from($this->sourceMessageTable)->where([
                         'category' => $event->category,
                         'message'  => $event->message,
-                    ])->execute();
-                    $this->messagesId[$event->message] = Yii::$app->db->lastInsertID;
+                    ])->scalar($this->db);
+                    if ($id === false) {
+                        $this->db->createCommand()->insert($this->sourceMessageTable,[
+                            'category' => $event->category,
+                            'message'  => $event->message,
+                        ])->execute();
+                        $id = $this->db->lastInsertID;
+                    }
+                    $this->messagesId[$event->message] = $id;
                 }
                 $event->translatedMessage = $event->message;
             });
@@ -78,22 +87,7 @@ class DbMessageSource extends \yii\i18n\DbMessageSource
             $language = $newLanguage;
         }
 
-        if ($this->enableCaching && false) {
-            $key = [
-                __CLASS__,
-                $category,
-                $language,
-            ];
-            $messages = $this->cache->get($key);
-            if ($messages === false) {
-                $messages = $this->loadMessagesFromDb($category, $language);
-                $this->cache->set($key, $messages, $this->cachingDuration);
-            }
-
-            return $messages;
-        } else {
-            return $this->loadMessagesFromDb($category, $language);
-        }
+        return $this->loadMessagesFromDb($category, $language);
     }
 
     /**
@@ -105,15 +99,22 @@ class DbMessageSource extends \yii\i18n\DbMessageSource
      */
     protected function loadMessagesFromDb($category, $language)
     {
-        $mainQuery = new Query();
-        $mainQuery->select(['t1.id', 't1.message message', 't2.translation translation'])
-            ->from([$this->sourceMessageTable . ' t1'])
-            ->leftJoin($this->messageTable . ' t2','t1.id = t2.id AND t2.language_id = :language')
-            ->where('t1.category = :category')
-            ->params([':category' => $category, ':language' => $language]);
 
-        $messages = $mainQuery->createCommand($this->db)->queryAll();
+        if ($this->enableCaching) {
+            $key = [
+                __CLASS__,
+                $category,
+                $language,
+            ];
 
+            $messages = $this->cache->get($key);
+            if ($messages === false) {
+                $messages = $this->getCommandQuery($category, $language)->queryAll();
+                $this->cache->set($key, $messages, $this->cachingDuration);
+            }
+        } else {
+            $messages = $this->getCommandQuery($category, $language)->queryAll();
+        }
         $result = [];
         foreach ($messages as $message) {
             if ($message['translation'] !== null) {
@@ -121,7 +122,25 @@ class DbMessageSource extends \yii\i18n\DbMessageSource
             }
             $this->messagesId[$message['message']] = $message['id'];
         }
+
         return $result;
+    }
+
+    /**
+     * @param $category
+     * @param $language
+     * @return \yii\db\Command
+     */
+    public function getCommandQuery($category, $language)
+    {
+        $query = new Query();
+        $query->select(['t1.id', 't1.message message', 't2.translation translation'])
+            ->from([$this->sourceMessageTable . ' t1'])
+            ->leftJoin($this->messageTable . ' t2','t1.id = t2.id AND t2.language_id = :language')
+            ->where('t1.category = :category')
+            ->params([':category' => $category, ':language' => $language]);
+
+        return $query->createCommand($this->db);
     }
 
     /**
