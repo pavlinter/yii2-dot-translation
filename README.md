@@ -132,3 +132,33 @@ Yii::$app->i18n->enableDot();//OR enable dot
 //Add description variables to popup.
 echo Yii::t('app', 'Count: ', ['dot' => true, 'var' => ['count' => 'Count email', 'owner']]);
 ```
+
+```php
+//render languages
+echo \yii\widgets\Menu::widget([
+    'items' => Yii::$app->i18n->menuItems(),
+    'encodeLabels' => false,
+]);
+```
+
+```php
+//get array with current url
+Yii::$app->i18n->getLanguages(true); //true|callable
+/*
+Array
+(
+    [1] => Array
+    (
+        [id] => 1
+        [code] => en
+        [name] => English
+        [image] => /files/en.png
+        [weight] => 130
+        [active] => 1
+        [updated_at] => 1424504802
+        [url] => /en/site/index
+    )
+    ...
+)
+*/
+```

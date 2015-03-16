@@ -36,6 +36,7 @@ class I18N extends \yii\i18n\I18N
     public $langColCode         = 'code'; //language code ru,en ...
     public $langColLabel        = 'name';
     public $langColUpdatedAt    = 'updated_at';
+    public $langColImage        = 'image';
 
     public $langWhere           = ['active' => 1];
     public $langOrder           = 'weight';
@@ -226,7 +227,7 @@ class I18N extends \yii\i18n\I18N
             $language = null;
             if ($langKey) {
                 foreach ($this->languages as $l) {
-                    if ($l['code'] == $langKey) {
+                    if ($l[$this->langColCode] == $langKey) {
                         $language = $l;
                         break;
                     }
@@ -687,13 +688,62 @@ class I18N extends \yii\i18n\I18N
         }
         return $this->language;
     }
+
     /**
-     * @return array languages list
+     * @param bool|callable $callable function($language, $id){return $language;}
+     * if set true, created current url
+     * @return array
      */
-    public function getLanguages()
+    public function getLanguages($callable = false)
     {
-        return $this->languages;
+        $languages = $this->languages;
+        if (is_callable($callable)) {
+            foreach ($languages as $id => $language) {
+                $languages[$id] = call_user_func($callable, $language, $id);
+            }
+        } elseif ($callable == true) {
+            foreach ($languages as $id => $language) {
+                $languages[$id]['url'] = Url::current([$this->langParam => $language[$this->langColCode]]);
+            }
+        }
+        return $languages;
     }
+
+    /**
+     * @param callable $callable function($menuRow, $language, $id){ return $menuRow;}
+     * @return array for \yii\widgets\Menu
+     */
+    public function menuItems(callable $callable = null)
+    {
+        $languages = $this->getLanguages(true);
+        $menu = [];
+        if ($callable) {
+            foreach ($languages as $id => $language) {
+                $text = $language[$this->langColCode];
+                if ($language[$this->langColImage]) {
+                    $text = Html::img($language[$this->langColImage]);
+                }
+                $menuRow = [
+                    'label' => $text,
+                    'url' => $language['url'],
+                ];
+                $menu[] = call_user_func($callable, $menuRow, $language, $id);
+            }
+        } else {
+            foreach ($languages as $id => $language) {
+                $text = $language[$this->langColCode];
+                if ($language[$this->langColImage]) {
+                    $text = Html::img($language[$this->langColImage]);
+                }
+                $menu[] = [
+                    'label' => $text,
+                    'url' => $language['url'],
+                ];
+            }
+        }
+        return $menu;
+    }
+
     /**
      * @return int language id from language table
      */
