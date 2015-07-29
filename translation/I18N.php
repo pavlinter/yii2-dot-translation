@@ -47,6 +47,8 @@ class I18N extends \yii\i18n\I18N
     public $nl2br               = true;
 
     public $router              = '/site/dot-translation';
+    public $categoryUrl         = false;
+    public $categoryText        = '<span class="glyphicon glyphicon-globe"></span>';
     public $langParam           = 'lang'; // $_GET KEY
     public $access              = 'dots-control';
     public $htmlScope           = false;
@@ -246,6 +248,7 @@ class I18N extends \yii\i18n\I18N
             $this->language     = $language;
             $this->languageId   = $language['id'];
         }
+        
     }
     /**
      * Translates a message to the specified language.
@@ -462,8 +465,10 @@ class I18N extends \yii\i18n\I18N
     {
         return md5($data);
     }
+
     /**
      * Register client side
+     * @param $view \yii\web\View
      */
     public function registerAssets($view)
     {
@@ -477,13 +482,22 @@ class I18N extends \yii\i18n\I18N
             ';
         }
 
+        if ($this->categoryUrl) {
+           echo Html::a($this->categoryText, "javascript:void(0);", ['class' => 'dots-category-link', 'style' => 'display: none;', 'target' => '_blank']);
+        }
+
         $request = Yii::$app->getRequest();
+
+
+
 
         $view->registerJs('
             var dotBtn = {
                 text: "' . Yii::t("app/i18n-dot", "Change", ['dot' => false]) . '",
                 loading : "' . Yii::t("app/i18n-dot", "Loading...", ['dot' => false]) . '"
             };
+            var dotCategoryUrl = "' . Url::to($this->categoryUrl) . '";
+            var langCode = "' . $this->language['code'] . '";
 
             jQuery("#dot-translation-form button").on("click", function () {
 
@@ -529,6 +543,7 @@ class I18N extends \yii\i18n\I18N
 
             jQuery(document).on("click",".'.$this->dotClass.'",function () {
                 '.$script.'
+                var $catLink    = jQuery(".dots-category-link");
                 var $form       = jQuery("#dot-translation-form");
                 var $varCont    = jQuery("#dots-variables");
                 var $el         = jQuery(this);
@@ -544,12 +559,18 @@ class I18N extends \yii\i18n\I18N
                 $form.attr("data-hash", hash);
                 $form.attr("data-to", dotTo);
 
+                if($catLink.is(":hidden")){
+                    $catLink.show().appendTo(jQuery("#dots-modal-header"));
+                }
+
                 $varCont.hide();
 
                 k.message = encodeURIComponent(k.message);
 
                 jQuery("#dot-translation-form #dots-inp-category").val(k.category);
                 jQuery("#dot-translation-form #dots-inp-message").val(k.message);
+
+                $catLink.attr("href", dotCategoryUrl.replace("{lang}", langCode).replace("{category}", k.category).replace("{message}", k.message))
 
                 if(variables){
                     for(v in variables){
@@ -615,6 +636,9 @@ class I18N extends \yii\i18n\I18N
                 padding-bottom: 5px;
                 margin-bottom: 10px;
             }
+            #dots-modal-header{
+                position: relative;
+            }
             #dots-modal-header #dots-modal-cat-header{
                 text-align: center;
                 border-bottom: 1px dashed silver;
@@ -630,6 +654,12 @@ class I18N extends \yii\i18n\I18N
             }
             #dot-translation-form #dots-filter{
                 display: none;
+            }
+            .dots-category-link{
+                position: absolute;
+                display: inline-block;
+                left: 0px;
+                top: 0px;
             }
         ');
     }
