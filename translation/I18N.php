@@ -112,8 +112,8 @@ class I18N extends \yii\i18n\I18N
                 \yii\bootstrap\Modal::begin([
                     'header' => '<div id="dots-modal-header" style="padding-right: 10px;"><div id="dots-modal-cat-header"></div><div id="dots-modal-key-header"></div></div>',
                     'toggleButton' => [
-                        'class' => 'hide',
                         'id' => 'dots-btn-modal',
+                        'style' => 'display: none;',
                     ],
                 ]);
 
@@ -124,6 +124,7 @@ class I18N extends \yii\i18n\I18N
                 \yii\jui\Dialog::begin([
                     'options' => [
                         'id' => 'dots-btn-modal',
+                        'style' => 'display: none;',
                     ],
                     'clientOptions' => [
                         'autoOpen' => false,
@@ -470,8 +471,8 @@ class I18N extends \yii\i18n\I18N
         if ($this->dialog == I18N::DIALOG_JQ) {
             DialogAsset::register(Yii::$app->getView());
             $script = '
-                if($("#dots-modal-header").size() == 0){
-                    $("#dots-btn-modal").closest(".ui-dialog").find(".ui-dialog-title").html("<div id=\"dots-modal-header\"><div id=\"dots-modal-cat-header\"></div><div id=\"dots-modal-key-header\"></div></div>");
+                if(jQuery("#dots-modal-header").size() == 0){
+                    jQuery("#dots-btn-modal").closest(".ui-dialog").find(".ui-dialog-title").html("<div id=\"dots-modal-header\"><div id=\"dots-modal-cat-header\"></div><div id=\"dots-modal-key-header\"></div></div>");
                 }
             ';
         }
@@ -484,16 +485,16 @@ class I18N extends \yii\i18n\I18N
                 loading : "' . Yii::t("app/i18n-dot", "Loading...", ['dot' => false]) . '"
             };
 
-            $("#dot-translation-form button").on("click", function () {
+            jQuery("#dot-translation-form button").on("click", function () {
 
-                var form        = $(this).closest("form");
+                var form        = jQuery(this).closest("form");
                 var hash        = form.attr("data-hash");
                 var dotTo       = form.attr("data-to");
                 var redirect    = form.attr("data-redirect")==1;
 
-                $("#dot-btn",form).prop("disabled", true).text(dotBtn.loading);
+                jQuery("#dot-btn",form).prop("disabled", true).text(dotBtn.loading);
 
-                $.ajax({
+                jQuery.ajax({
                     url: form.attr("action"),
                     type: "POST",
                     dataType: "json",
@@ -506,8 +507,8 @@ class I18N extends \yii\i18n\I18N
 
                     if (d.r) {
                         var val = d.message;
-                        var $dot = $("[data-hash=\'" + hash + "\']").not(form);
-                        var $dotTo = $("[data-hash=\'" + dotTo + "\']");
+                        var $dot = jQuery("[data-hash=\'" + hash + "\']").not(form);
+                        var $dotTo = jQuery("[data-hash=\'" + dotTo + "\']");
                         var params = $dot.attr("data-params");
                         if (params) {
                             var o = jQuery.parseJSON(params);
@@ -516,9 +517,9 @@ class I18N extends \yii\i18n\I18N
                             }
                         }
                         $dot.prev(".text-' . $this->dotClass . '").html(val);
-                        $("#dot-btn",form).text(dotBtn.text).prop("disabled", false);
+                        jQuery("#dot-btn",form).text(dotBtn.text).prop("disabled", false);
                         $dotTo.html(val);
-                        ' .($this->dialog == I18N::DIALOG_JQ?'$("#dots-btn-modal").dialog("close");':'var modalID = $("#dots-btn-modal").attr("data-target");$(modalID).modal("hide");') . '
+                        ' .($this->dialog == I18N::DIALOG_JQ?'jQuery("#dots-btn-modal").dialog("close");':'var modalID = jQuery("#dots-btn-modal").attr("data-target");jQuery(modalID).modal("hide");') . '
                     }
                 });
 
@@ -526,18 +527,18 @@ class I18N extends \yii\i18n\I18N
 
             });
 
-            $(document).on("click",".'.$this->dotClass.'",function () {
+            jQuery(document).on("click",".'.$this->dotClass.'",function () {
                 '.$script.'
-                var $form       = $("#dot-translation-form");
-                var $varCont    = $("#dots-variables");
-                var $el         = $(this);
-                var k           = $.parseJSON($el.attr("data-keys"));
-                var variables   = $.parseJSON($el.attr("data-var"));
+                var $form       = jQuery("#dot-translation-form");
+                var $varCont    = jQuery("#dots-variables");
+                var $el         = jQuery(this);
+                var k           = jQuery.parseJSON($el.attr("data-keys"));
+                var variables   = jQuery.parseJSON($el.attr("data-var"));
                 var hash        = $el.attr("data-hash");
                 var redirect    = $el.attr("data-redirect");
                 var dotTo       = $el.attr("data-to");
-                var $textarea   = $("#dot-translation-form textarea").val(dotBtn.loading);
-                var $key        = $("#dots-modal-header #dots-modal-key-header")
+                var $textarea   = jQuery("#dot-translation-form textarea").val(dotBtn.loading);
+                var $key        = jQuery("#dots-modal-header #dots-modal-key-header")
                 var viewMsg     = k.message.replace(/<br\s*[\/]?>/gi, "\n");
                 $form.attr("data-redirect",redirect);
                 $form.attr("data-hash", hash);
@@ -547,12 +548,12 @@ class I18N extends \yii\i18n\I18N
 
                 k.message = encodeURIComponent(k.message);
 
-                $("#dot-translation-form #dots-inp-category").val(k.category);
-                $("#dot-translation-form #dots-inp-message").val(k.message);
+                jQuery("#dot-translation-form #dots-inp-category").val(k.category);
+                jQuery("#dot-translation-form #dots-inp-message").val(k.message);
 
                 if(variables){
                     for(v in variables){
-                        if($.isNumeric(v)){
+                        if(jQuery.isNumeric(v)){
                             $varCont.append("<div class=\"dots-var\">{" + variables[v] +"}</div>");
                         } else {
                             $varCont.append("<div class=\"dots-var\">{" + v + "} - " + variables[v] + "</div>");
@@ -566,21 +567,21 @@ class I18N extends \yii\i18n\I18N
                 $key.text(viewMsg);
                 $key.html($key.html().replace(/\n/g,"<br/>"));
 
-                $("#dots-btn-modal").' .($this->dialog == I18N::DIALOG_JQ?'dialog("open")':'trigger("click")') . ';
+                jQuery("#dots-btn-modal").' .($this->dialog == I18N::DIALOG_JQ?'dialog("open")':'trigger("click")') . ';
 
-                $.ajax({
+                jQuery.ajax({
                     url: $form.attr("action"),
                     type: "POST",
                     dataType: "json",
                     data: k,
                 }).done(function(d) {
                     $textarea.val("");
-                    var $dotHeader = $("#dots-modal-header #dots-modal-cat-header")
+                    var $dotHeader = jQuery("#dots-modal-header #dots-modal-cat-header")
 
                     if (d.adminLink){
-                        var $adminLinkForm = $("<form method=\"post\" action=\"" + d.adminLink + "\" target=\"_blank\"><input type=\"hidden\" name=\"category\" value=\"" + k.category + "\" /><input type=\"hidden\" name=\"message\" value=\"" + k.message + "\" /><input type=\"hidden\" name=\"'.$request->csrfParam.'\" value=\"'.$request->getCsrfToken().'\" /><a href=\"javascript:void(0);\">" + k.category + "</a></form>");
+                        var $adminLinkForm = jQuery("<form method=\"post\" action=\"" + d.adminLink + "\" target=\"_blank\"><input type=\"hidden\" name=\"category\" value=\"" + k.category + "\" /><input type=\"hidden\" name=\"message\" value=\"" + k.message + "\" /><input type=\"hidden\" name=\"'.$request->csrfParam.'\" value=\"'.$request->getCsrfToken().'\" /><a href=\"javascript:void(0);\">" + k.category + "</a></form>");
                         $adminLinkForm.find("a").on("click", function(){
-                            $(this).closest("form").submit();
+                            jQuery(this).closest("form").submit();
                             return false;
                         });
                         $dotHeader.html($adminLinkForm);
@@ -591,16 +592,16 @@ class I18N extends \yii\i18n\I18N
                     for(m in d.fields){
                         val = d.fields[m];
                         if(val == ""){
-                            $(m).addClass("emptyField").val(val);
+                            jQuery(m).addClass("emptyField").val(val);
                         }else{
-                            $(m).removeClass("emptyField").val(val);
+                            jQuery(m).removeClass("emptyField").val(val);
                         }
                     }
                 });
                 return false;
             });
-            $("#dot-translation-form textarea").on("focus",function(){
-                $(this).removeClass("emptyField");
+            jQuery("#dot-translation-form textarea").on("focus",function(){
+                jQuery(this).removeClass("emptyField");
             });
         ');
 
