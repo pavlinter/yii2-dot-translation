@@ -94,7 +94,6 @@ class I18N extends \yii\i18n\I18N
         if ($this->access() && !$this->isPjax()) {
             $view = Yii::$app->getView();
             $this->register($view);
-
         }
     }
 
@@ -248,7 +247,7 @@ class I18N extends \yii\i18n\I18N
             $this->language     = $language;
             $this->languageId   = $language['id'];
         }
-        
+        Yii::setAlias('weblang', Yii::getAlias('@web/' . Yii::$app->language));
     }
     /**
      * Translates a message to the specified language.
