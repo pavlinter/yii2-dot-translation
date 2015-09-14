@@ -70,6 +70,11 @@ class I18N extends \yii\i18n\I18N
      */
     public function init()
     {
+        if (Yii::$app->request->getIsConsoleRequest()) {
+            return true;
+        }
+        $this->initLanguage();
+
         if (!isset($this->translations['yii']) && !isset($this->translations['yii*'])) {
             $this->translations['yii'] = [
                 'class' => 'yii\i18n\PhpMessageSource',
@@ -80,17 +85,11 @@ class I18N extends \yii\i18n\I18N
         if (!isset($this->translations['app']) && !isset($this->translations['app*'])) {
             $this->translations['app'] = [
                 'class' => 'pavlinter\translation\DbMessageSource',
-                'sourceLanguage' => Yii::$app->sourceLanguage,
+                'sourceLanguage' => 'en',
                 'forceTranslation' => true,
             ];
         }
-
-        if (Yii::$app->request->getIsConsoleRequest()) {
-            return true;
-        }
-
-        $this->initLanguage();
-
+        
         if ($this->access() && !$this->isPjax()) {
             $view = Yii::$app->getView();
             $this->register($view);
@@ -289,7 +288,7 @@ class I18N extends \yii\i18n\I18N
             if ($nl2br) {
                 $message = nl2br($message);
             }
-            return $settings['before'].$this->format($message, $params, $messageSource->sourceLanguage).$settings['after'];
+            return $settings['before'].$this->format($message, $params, $language).$settings['after'];
         } else {
             if ($nl2br) {
                 $translation = nl2br($translation);
