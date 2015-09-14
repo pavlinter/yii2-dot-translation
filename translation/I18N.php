@@ -3,7 +3,7 @@
 /**
  * @copyright Copyright &copy; Pavels Radajevs, 2015
  * @package yii2-dot-translation
- * @version 1.2.1
+ * @version 1.2.2
  */
 
 namespace pavlinter\translation;
@@ -89,7 +89,7 @@ class I18N extends \yii\i18n\I18N
                 'forceTranslation' => true,
             ];
         }
-        
+
         if ($this->access() && !$this->isPjax()) {
             $view = Yii::$app->getView();
             $this->register($view);
