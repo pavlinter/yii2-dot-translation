@@ -3,7 +3,7 @@
 /**
  * @copyright Copyright &copy; Pavels Radajevs, 2015
  * @package yii2-dot-translation
- * @version 1.2.2
+ * @version 1.2.3
  */
 
 namespace pavlinter\translation;
