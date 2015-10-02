@@ -110,7 +110,10 @@ class I18N extends \yii\i18n\I18N
 
             if ($this->dialog == I18N::DIALOG_BS) {
                 \yii\bootstrap\Modal::begin([
-                    'header' => '<div id="dots-modal-header" style="padding-right: 10px;"><div id="dots-modal-cat-header"></div><div id="dots-modal-key-header"></div></div>',
+                    'header' => '<div id="dots-modal-header"><div id="dots-modal-cat-header"></div><div id="dots-modal-key-header"></div></div>',
+                    'closeButton' => [
+                        'class' => 'close dot-close',
+                    ],
                     'toggleButton' => [
                         'id' => 'dots-btn-modal',
                         'style' => 'display: none;',
@@ -636,6 +639,11 @@ class I18N extends \yii\i18n\I18N
             }
             #dots-modal-header{
                 position: relative;
+                padding-right: 10px;
+            }
+            .dot-close{
+                position: relative;
+                z-index: 1;
             }
             #dots-modal-header #dots-modal-cat-header{
                 text-align: center;
