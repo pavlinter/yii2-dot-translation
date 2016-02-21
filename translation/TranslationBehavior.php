@@ -355,6 +355,16 @@ class TranslationBehavior extends Behavior
             }
         }
     }
-
-
+    
+    /**
+     * @param null $id_language
+     * @param array $expand
+     * @param bool $recursive
+     * @return array
+     */
+    public function langToArray($id_language = null, $expand = [], $recursive = true)
+    {
+        $translation = $this->getTranslation($id_language);
+        return $translation->toArray($this->translationAttributes, $expand, $recursive);
+    }
 } 
