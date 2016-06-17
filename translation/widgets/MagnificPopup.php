@@ -164,6 +164,7 @@ class MagnificPopup extends \yii\base\Widget
                 $this->toggleButton['href'] = "#" . $this->popupOptions['id'];
             }
             $this->defaultPluginOptions['preloader'] = false;
+            $this->defaultPluginOptions['overflowY'] = 'scroll';
             Html::addCssClass($this->popupOptions, $this->popupClass);
             Html::addCssClass($this->popupOptions, $this->popupHide);
             if ($this->effect) {
