@@ -28,6 +28,7 @@ class I18N extends \yii\i18n\I18N
 {
     const DIALOG_BS = 'bs';
     const DIALOG_JQ = 'jq';
+    const DIALOG_MAGNIFIC = 'mp';
 
     public $dotClass            = 'dot-translation';
     public $dotSymbol           = '&bull;';
@@ -48,12 +49,12 @@ class I18N extends \yii\i18n\I18N
 
     public $router              = '/site/dot-translation';
     public $categoryUrl         = false;
-    public $categoryText        = '<span class="glyphicon glyphicon-globe"></span>';
+    public $categoryText        = '';
     public $langParam           = 'lang'; // $_GET KEY
     public $access              = 'dots-control';
     public $htmlScope           = false;
     public $htmlScopeClass      = 'bs';
-    public $dialog              = I18N::DIALOG_BS; // bs or jq
+    public $dialog              = I18N::DIALOG_MAGNIFIC; // bs or jq or mp
 
     private $dotMode            = null;
     private $language           = null;
@@ -114,8 +115,11 @@ class I18N extends \yii\i18n\I18N
                     'closeButton' => [
                         'class' => 'close dot-close',
                     ],
-                    'toggleButton' => [
+                    'options' => [
                         'id' => 'dots-btn-modal',
+                    ],
+                    'toggleButton' => [
+                        'id' => 'dots-btns',
                         'style' => 'display: none;',
                     ],
                 ]);
@@ -138,6 +142,28 @@ class I18N extends \yii\i18n\I18N
                 $this->bodyDialog();
 
                 \yii\jui\Dialog::end();
+            } else if ($this->dialog == I18N::DIALOG_MAGNIFIC) {
+                \pavlinter\translation\widgets\MagnificPopup::begin([
+                    'toggleButton' => [
+                        'id' => 'dots-btns',
+                        'style' => 'display: none;',
+                        'href' => '#dots-btn-modal',
+                    ],
+                    'popupClass' => 'dot-white-popup',
+                    'effect' => 'zoom-in',
+                    'popupOptions' => [
+                        'class' => 'dots-modal-magnific',
+                        'id' => 'dots-btn-modal',
+                    ],
+                ]);
+
+                echo Html::beginTag('div', ['id' => 'dots-modal-header']);
+                echo Html::tag('div', null, ['id' => 'dots-modal-cat-header']);
+                echo Html::tag('div', null, ['id' => 'dots-modal-key-header']);
+                echo Html::endTag('div');
+                $this->bodyDialog();
+
+                \pavlinter\translation\widgets\MagnificPopup::end();
             }
 
 
@@ -474,8 +500,8 @@ class I18N extends \yii\i18n\I18N
     public function registerAssets($view)
     {
         $script = '';
+        StyleAsset::register(Yii::$app->getView());
         if ($this->dialog == I18N::DIALOG_JQ) {
-            DialogAsset::register(Yii::$app->getView());
             $script = '
                 if(jQuery("#dots-modal-header").size() == 0){
                     jQuery("#dots-btn-modal").closest(".ui-dialog").find(".ui-dialog-title").html("<div id=\"dots-modal-header\"><div id=\"dots-modal-cat-header\"></div><div id=\"dots-modal-key-header\"></div></div>");
@@ -485,6 +511,19 @@ class I18N extends \yii\i18n\I18N
 
         if ($this->categoryUrl) {
            echo Html::a($this->categoryText, "javascript:void(0);", ['class' => 'dots-category-link', 'style' => 'display: none;', 'target' => '_blank']);
+        }
+
+        $showPopup = '';
+        $hidePopup = '';
+        if ($this->dialog == I18N::DIALOG_BS) {
+            $showPopup = 'jQuery("#dots-btns").trigger("click");';
+            $hidePopup = 'jQuery("#dots-btn-modal").modal("hide");';
+        } else if ($this->dialog == I18N::DIALOG_JQ) {
+            $showPopup = 'jQuery("#dots-btn-modal").dialog("open");';
+            $hidePopup = 'jQuery("#dots-btn-modal").dialog("close");';
+        } else if ($this->dialog == I18N::DIALOG_MAGNIFIC) {
+            $showPopup = 'jQuery("#dots-btns").trigger("click");';
+            $hidePopup = '$.magnificPopup.close();';
         }
 
         $request = Yii::$app->getRequest();
@@ -534,7 +573,7 @@ class I18N extends \yii\i18n\I18N
                         $dot.prev(".text-' . $this->dotClass . '").html(val);
                         jQuery("#dot-btn",form).text(dotBtn.text).prop("disabled", false);
                         $dotTo.html(val);
-                        ' .($this->dialog == I18N::DIALOG_JQ?'jQuery("#dots-btn-modal").dialog("close");':'var modalID = jQuery("#dots-btn-modal").attr("data-target");jQuery(modalID).modal("hide");') . '
+                        ' . $hidePopup . '
                     }
                 });
 
@@ -565,6 +604,7 @@ class I18N extends \yii\i18n\I18N
                 }
 
                 $varCont.hide();
+                $varCont.text("");
 
                 k.message = encodeURIComponent(k.message);
 
@@ -589,7 +629,7 @@ class I18N extends \yii\i18n\I18N
                 $key.text(viewMsg);
                 $key.html($key.html().replace(/\n/g,"<br/>"));
 
-                jQuery("#dots-btn-modal").' .($this->dialog == I18N::DIALOG_JQ?'dialog("open")':'trigger("click")') . ';
+                ' . $showPopup . '
 
                 jQuery.ajax({
                     url: $form.attr("action"),
@@ -625,48 +665,6 @@ class I18N extends \yii\i18n\I18N
             jQuery("#dot-translation-form textarea").on("focus",function(){
                 jQuery(this).removeClass("emptyField");
             });
-        ');
-
-        $view->registerCss('
-            .'.$this->dotClass.'{
-                cursor: pointer;
-                text-decoration: none;
-            }
-            #dots-variables{
-                font-size: 11px;
-                padding-bottom: 5px;
-                margin-bottom: 10px;
-            }
-            #dots-modal-header{
-                position: relative;
-                padding-right: 10px;
-            }
-            .dot-close{
-                position: relative;
-                z-index: 1;
-            }
-            #dots-modal-header #dots-modal-cat-header{
-                text-align: center;
-                border-bottom: 1px dashed silver;
-                width: 80%;
-                margin: 0 auto;
-                padding: 0px 0px 5px 0px;
-            }
-            #dots-modal-header #dots-modal-key-header{
-                padding: 13px 0px 0px 0px;
-            }
-            #dot-translation-form .emptyField{
-                color: silver;
-            }
-            #dot-translation-form #dots-filter{
-                display: none;
-            }
-            .dots-category-link{
-                position: absolute;
-                display: inline-block;
-                left: 0px;
-                top: 0px;
-            }
         ');
     }
 
