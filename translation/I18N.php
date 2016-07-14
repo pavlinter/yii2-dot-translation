@@ -738,7 +738,9 @@ class I18N extends \yii\i18n\I18N
             }
         } elseif ($callable == true) {
             foreach ($languages as $id => $language) {
-                $languages[$id]['url'] = Url::current([$this->langParam => $language[$this->langColCode]]);
+                if (!isset($languages[$id]['url'])) {
+                    $languages[$id]['url'] = Url::current([$this->langParam => $language[$this->langColCode]]);
+                }
             }
         }
         return $languages;

@@ -20,9 +20,13 @@ use yii\db\ActiveRecord;
 class TranslationBehavior extends Behavior
 {
     /**
-     * @var string the name of the translations relation
+     * @var string the name of the translation relation
      */
-    public $relation = 'translations';
+    public $relations = 'translations';
+    /**
+     * @var string the name of the translation relation
+     */
+    public $relation = 'translation';
     /**
      * @var string the language field used in the related table. Determines the language to query | save.
      */
@@ -72,7 +76,7 @@ class TranslationBehavior extends Behavior
     public function __set($name, $value)
     {
         if (in_array($name, $this->translationAttributes)) {
-            $this->getTranslation()->$name = $value;
+            $this->getOneTranslation()->$name = $value;
         } else {
             parent::__set($name, $value);
         }
@@ -91,7 +95,7 @@ class TranslationBehavior extends Behavior
             return $this->_models[$name];
         }
 
-        $model = $this->getTranslation();
+        $model = $this->getOneTranslation();
         return $model->$name;
     }
 
@@ -119,7 +123,6 @@ class TranslationBehavior extends Behavior
     public function afterFind($event)
     {
         $this->populateTranslations();
-        $this->getTranslation();
     }
 
     /**
@@ -171,13 +174,17 @@ class TranslationBehavior extends Behavior
         return $this->_language;
     }
 
+
     /**
      * Saves current translation model
+     * @param null $id_language
+     * @param bool $runValidation
+     * @param null $attributeNames
      * @return bool
      */
-    public function saveTranslation($id_language = null,$runValidation = true, $attributeNames = null)
+    public function saveTranslation($id_language = null, $runValidation = true, $attributeNames = null)
     {
-        $model = $this->getTranslation($id_language);
+        $model = $this->getOneTranslation($id_language);
         $dirty = $model->getDirtyAttributes();
         if (empty($dirty)) {
             return true; // we do not need to save anything
@@ -236,7 +243,7 @@ class TranslationBehavior extends Behavior
         $valid = true;
         foreach (Yii::$app->getI18n()->getLanguages() as $id_language => $language) {
             /** @var ActiveRecord $model */
-            $model = $this->getTranslation($id_language);
+            $model = $this->getOneTranslation($id_language);
             $valid = $model->validate($attributeNames, $clearErrors) && $valid;
         }
         return $valid;
@@ -252,10 +259,12 @@ class TranslationBehavior extends Behavior
         $valid = $this->owner->load($data);
         return $this->loadLangs($data) && $valid;
     }
+
+
     /**
      * @param array $data the data array. This is usually `$_POST` or `$_GET`, but can also be any valid array
      * supplied by end user.
-     * @param integer|null $language the language to return. If null, current sys language
+     * @param null $id_language the language to return. If null, current sys language
      * @return bool
      */
     public function loadLang($data, $id_language = null)
@@ -265,10 +274,10 @@ class TranslationBehavior extends Behavior
         $relation = $this->owner->getRelation($this->relation);
         /** @var ActiveRecord $class */
         $class = $relation->modelClass;
-        $reflector = new ReflectionClass($relation->modelClass);
+        $reflector = new ReflectionClass($class);
         $scope  = $reflector->getShortName();
         if (isset($data[$scope][$id_language]) && !empty($data[$scope][$id_language])) {
-            $model = $this->getTranslation($id_language);
+            $model = $this->getOneTranslation($id_language);
             $model->setAttributes($data[$scope][$id_language]);
             return true;
         } else {
@@ -290,11 +299,11 @@ class TranslationBehavior extends Behavior
     }
 
     /**
-     * Returns a related translation model
-     * @param integer|null $language the language to return. If null, current sys language
+     * * Returns a related translation model
+     * @param null $id_language
      * @return ActiveRecord
      */
-    public function getTranslation($id_language = null)
+    public function getOneTranslation($id_language = null)
     {
         if ($id_language === null) {
             $id_language = $this->getLanguage();
@@ -303,7 +312,6 @@ class TranslationBehavior extends Behavior
         if (!isset($this->_models[$id_language])) {
             $this->_models[$id_language] = $this->loadTranslation($id_language);
         }
-
         return $this->_models[$id_language];
     }
     /**
@@ -312,31 +320,70 @@ class TranslationBehavior extends Behavior
      */
     public function hasTranslation($id_language = null)
     {
-        $model = $this->getTranslation($id_language);
-        return !$model->isNewRecord;
+        /* @var $model \yii\db\ActiveRecord */
+        $model = $this->getOneTranslation($id_language);
+        return !$model->getIsNewRecord();
     }
+
     /**
      * Loads a specific translation model
-     * @param integer $language the language to return
+     * @param integer $id_language $language the language to return
      * @return null|\yii\db\ActiveQuery|static
      */
     private function loadTranslation($id_language)
     {
-        /** @var \yii\db\ActiveQuery $relation */
-        $relation = $this->owner->getRelation($this->relation);
-        /** @var ActiveRecord $class */
+        /* @var $model ActiveRecord */
+        $model = $this->owner;
+        /* @var $relation \yii\db\ActiveQuery */
+        $relation = $model->getRelation($this->relation);
+        /* @var $class ActiveRecord */
         $class = $relation->modelClass;
-
-        $translation = $class::findOne([$this->languageField => $id_language, key($relation->link) => $this->owner->getPrimarykey()]);
+        $translation = null;
+        if (!$model->getIsNewRecord()) {
+            $translation = $class::findOne([$this->languageField => $id_language, key($relation->link) => $this->owner->getPrimarykey()]);
+        }
         if ($translation === null) {
             $translation = new $class;
             $translation->{key($relation->link)} = $this->owner->getPrimaryKey();
             $translation->{$this->languageField} = $id_language;
         }
         $translation->setScenario($this->scenario);
-
         return $translation;
     }
+
+    /**
+     * Loads a specific translation model
+     * @param integer $id_language $language the language to return
+     * @return null|\yii\db\ActiveQuery|static
+     */
+    public function loadTranslations()
+    {
+        /* @var $model ActiveRecord */
+        $model = $this->owner;
+        $aRelated = $model->getRelatedRecords();
+
+        if (isset($aRelated[$this->relations]) && $aRelated[$this->relations] != null) {
+            foreach ($aRelated[$this->relations] as $translation) {
+                $this->_models[$translation->getAttribute($this->languageField)] = $translation;
+            }
+        } else {
+            /* @var $relation \yii\db\ActiveQuery */
+            $relation = $model->getRelation($this->relations);
+            $translations = $relation->all();
+            foreach ($translations as $translation) {
+                $language_id = $translation->getAttribute($this->languageField);
+                if (!isset($this->_models[$language_id])) {
+                    $this->_models[$language_id] = $translation;
+                }
+            }
+        }
+
+
+
+
+        
+    }
+
     /**
      * Populates already loaded translations
      */
@@ -344,15 +391,13 @@ class TranslationBehavior extends Behavior
     {
         //translations
         $aRelated = $this->owner->getRelatedRecords();
-        if (isset($aRelated[$this->relation]) && $aRelated[$this->relation] != null) {
-            if (is_array($aRelated[$this->relation])) {
-                foreach ($aRelated[$this->relation] as $model) {
-                    $this->_models[$model->getAttribute($this->languageField)] = $model;
-                }
-            } else {
-                $model = $aRelated[$this->relation];
+        if (isset($aRelated[$this->relations]) && $aRelated[$this->relations] != null) {
+            foreach ($aRelated[$this->relations] as $model) {
                 $this->_models[$model->getAttribute($this->languageField)] = $model;
             }
+        }else if (isset($aRelated[$this->relation]) && $aRelated[$this->relation] != null) {
+            $model = $aRelated[$this->relation];
+            $this->_models[$model->getAttribute($this->languageField)] = $model;
         }
     }
     
@@ -364,7 +409,7 @@ class TranslationBehavior extends Behavior
      */
     public function langToArray($id_language = null, $expand = [], $recursive = true)
     {
-        $translation = $this->getTranslation($id_language);
+        $translation = $this->getOneTranslation($id_language);
         return $translation->toArray($this->translationAttributes, $expand, $recursive);
     }
 } 
