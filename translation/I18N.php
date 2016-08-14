@@ -90,6 +90,13 @@ class I18N extends \yii\i18n\I18N
                 'forceTranslation' => true,
             ];
         }
+        if (!isset($this->translations['i18n-dot']) && !isset($this->translations['i18n-dot*'])) {
+            $this->translations['i18n-dot'] = [
+                'class' => 'pavlinter\translation\DbMessageSource',
+                'sourceLanguage' => 'en',
+                'forceTranslation' => true,
+            ];
+        }
 
         if ($this->access() && !$this->isPjax()) {
             $view = Yii::$app->getView();
@@ -533,8 +540,8 @@ class I18N extends \yii\i18n\I18N
 
         $view->registerJs('
             var dotBtn = {
-                text: "' . Yii::t("app/i18n-dot", "Change", ['dot' => false]) . '",
-                loading : "' . Yii::t("app/i18n-dot", "Loading...", ['dot' => false]) . '"
+                text: "' . Yii::t("i18n-dot", "Change", ['dot' => false]) . '",
+                loading : "' . Yii::t("i18n-dot", "Loading...", ['dot' => false]) . '"
             };
             var dotCategoryUrl = "' . Url::to($this->categoryUrl) . '";
             var langCode = "' . $this->language['code'] . '";
@@ -690,7 +697,7 @@ class I18N extends \yii\i18n\I18N
                 'id' => 'dot-translation-' . $id_language]);
             echo Html::endTag('div');
         }
-        echo Html::submitButton(Yii::t("app/i18n-dot", "Change", ['dot' => false]), ['class' => 'btn btn-primary', 'id' => 'dot-btn']);
+        echo Html::submitButton(Yii::t("i18n-dot", "Change", ['dot' => false]), ['class' => 'btn btn-primary', 'id' => 'dot-btn']);
 
         ActiveForm::end();
     }
