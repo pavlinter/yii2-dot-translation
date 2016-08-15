@@ -10,6 +10,7 @@ namespace pavlinter\translation;
 
 use Yii;
 use yii\db\Query;
+use yii\i18n\MissingTranslationEvent;
 
 /**
  * @author Pavels Radajevs <pavlinter@gmail.com>
@@ -17,8 +18,13 @@ use yii\db\Query;
 class DbMessageSource extends \yii\i18n\DbMessageSource
 {
     public $autoInsert = false;
+
     public $dotMode;
+
     public $cachingDuration = 3600;
+
+    private $_messages = [];
+
     private $messagesId = [];
     /**
      * Initializes the DbMessageSource component.
@@ -115,15 +121,54 @@ class DbMessageSource extends \yii\i18n\DbMessageSource
         } else {
             $messages = $this->getCommandQuery($category, $language)->queryAll();
         }
+
         $result = [];
         foreach ($messages as $message) {
-            if ($message['translation'] !== null) {
-                $result[$message['message']] = $message['translation'];
-            }
+            $result[$message['message']] = $message['translation'];
             $this->messagesId[$message['message']] = $message['id'];
         }
-
+        
         return $result;
+    }
+
+
+    /**
+     * Translates the specified message.
+     * If the message is not found, a [[EVENT_MISSING_TRANSLATION|missingTranslation]] event will be triggered.
+     * If there is an event handler, it may provide a [[MissingTranslationEvent::$translatedMessage|fallback translation]].
+     * If no fallback translation is provided this method will return `false`.
+     * @param string $category the category that the message belongs to.
+     * @param string $message the message to be translated.
+     * @param string $language the target language.
+     * @return string|boolean the translated message or false if translation wasn't found.
+     */
+    protected function translateMessage($category, $message, $language)
+    {
+        $key = $language . '/' . $category;
+        if (!isset($this->_messages[$key])) {
+            $this->_messages[$key] = $this->loadMessages($category, $language);
+        
+        }
+
+
+        if (array_key_exists($message, $this->_messages[$key]) && $this->_messages[$key][$message] === null) {
+            return $this->_messages[$key][$message];
+        } elseif (isset($this->_messages[$key][$message]) && $this->_messages[$key][$message] != '') {
+            return $this->_messages[$key][$message];
+        } elseif ($this->hasEventHandlers(self::EVENT_MISSING_TRANSLATION)) {
+            $event = new MissingTranslationEvent([
+                'category' => $category,
+                'message' => $message,
+                'language' => $language,
+            ]);
+
+            $this->trigger(self::EVENT_MISSING_TRANSLATION, $event);
+            if ($event->translatedMessage !== null) {
+                return $this->_messages[$key][$message] = $event->translatedMessage;
+            }
+        }
+
+        return $this->_messages[$key][$message] = false;
     }
 
     /**

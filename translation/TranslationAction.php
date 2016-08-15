@@ -69,6 +69,8 @@ class TranslationAction extends Action
         $category       = Yii::$app->request->post('category');
         $message        = rawurldecode(Yii::$app->request->post('message'));
         $translations   = Yii::$app->request->post('translation');
+        $is_empty       = Yii::$app->request->post('is_empty');
+
 
         if ($translations) {
 
@@ -95,15 +97,19 @@ class TranslationAction extends Action
                     continue;
                 }
 
-                if ($this->htmlEncode) {
-                    $value = Html::encode($value);
-                }
-
-                if (Yii::$app->i18n->getId() == $id_language) {
-                    if (Yii::$app->i18n->nl2br) {
-                        $json['message'] = nl2br($value);
-                    } else {
-                        $json['message'] = $value;
+                if ($is_empty[$id_language]) {
+                    $value = null;
+                    $json['message'] = null;
+                } else {
+                    if ($this->htmlEncode) {
+                        $value = Html::encode($value);
+                    }
+                    if (Yii::$app->i18n->getId() == $id_language) {
+                        if (Yii::$app->i18n->nl2br) {
+                            $json['message'] = nl2br($value);
+                        } else {
+                            $json['message'] = $value;
+                        }
                     }
                 }
 
@@ -144,12 +150,17 @@ class TranslationAction extends Action
                         's.category' => $category,
                         's.message'  => $message,
                     ]);
-                $translation = Html::decode($query->scalar());
 
+                $value = $query->scalar();
+
+                if ($value === null) {
+                    $translation = $value;
+                } else {
+                    $translation = Html::decode($value);
+                }
                 if ($translation === false) {
                     $translation = '';
                 }
-
                 $json['fields']['#dot-translation-' . $id_language] = $translation;
 
             }

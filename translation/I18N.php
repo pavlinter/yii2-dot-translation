@@ -301,6 +301,9 @@ class I18N extends \yii\i18n\I18N
         $messageSource = $this->getMessageSource($category);
         $translation = $messageSource->translate($category, $message, $language);
 
+        //\yii\helpers\VarDumper::dump($translation, 10, true);
+
+
         $mod = ArrayHelper::remove($params, 'dot');
 
         if (isset($params['br'])) {
@@ -665,6 +668,12 @@ class I18N extends \yii\i18n\I18N
                         }else{
                             jQuery(m).removeClass("emptyField").val(val);
                         }
+                        var $isEmpty = jQuery(m).parent().find(".empty_checkbox");
+                        if(val === null){
+                            $isEmpty.prop("checked", true);
+                        } else {
+                            $isEmpty.prop("checked", false);
+                        }
                     }
                 });
                 return false;
@@ -691,6 +700,10 @@ class I18N extends \yii\i18n\I18N
         foreach ($this->languages as $id_language => $language) {
 
             echo Html::beginTag('div', ['class' => 'form-group']);
+            echo Html::beginTag('div', ['class' => 'is_empty_cont']);
+            echo Html::label(Yii::t("i18n-dot", "Empty", ['dot' => false]), 'is_empty_' . $id_language, ['class' => 'is_empty_label']);
+            echo Html::checkbox('is_empty[' . $id_language . ']', false, ['class' => 'empty_checkbox', 'id' => 'is_empty_' . $id_language, 'uncheck' => 0]);
+            echo Html::endTag('div');
             echo Html::label($language[$this->langColLabel],'dot-translation-' . $id_language);
             echo Html::textarea('translation[' . $id_language . ']', '', [
                 'class' => 'form-control',
