@@ -33,7 +33,7 @@ class DbMessageSource extends \yii\i18n\DbMessageSource
     {
         parent::init();
         if ($this->autoInsert) {
-            $this->on(self::EVENT_MISSING_TRANSLATION,function($event){
+            $this->on(static::EVENT_MISSING_TRANSLATION,function($event){
                 if (!isset($this->messagesId[$event->message])) {
                     $query = new Query();
                     $id = $query->select("id")->from($this->sourceMessageTable)->where([
@@ -150,19 +150,18 @@ class DbMessageSource extends \yii\i18n\DbMessageSource
         
         }
 
-
         if (array_key_exists($message, $this->_messages[$key]) && $this->_messages[$key][$message] === null) {
             return $this->_messages[$key][$message];
         } elseif (isset($this->_messages[$key][$message]) && $this->_messages[$key][$message] != '') {
             return $this->_messages[$key][$message];
-        } elseif ($this->hasEventHandlers(self::EVENT_MISSING_TRANSLATION)) {
+        } elseif ($this->hasEventHandlers(static::EVENT_MISSING_TRANSLATION)) {
             $event = new MissingTranslationEvent([
                 'category' => $category,
                 'message' => $message,
                 'language' => $language,
             ]);
 
-            $this->trigger(self::EVENT_MISSING_TRANSLATION, $event);
+            $this->trigger(static::EVENT_MISSING_TRANSLATION, $event);
             if ($event->translatedMessage !== null) {
                 return $this->_messages[$key][$message] = $event->translatedMessage;
             }
@@ -181,7 +180,7 @@ class DbMessageSource extends \yii\i18n\DbMessageSource
         $query = new Query();
         $query->select(['t1.id', 't1.message message', 't2.translation translation'])
             ->from([$this->sourceMessageTable . ' t1'])
-            ->leftJoin($this->messageTable . ' t2','t1.id = t2.id AND t2.language_id = :language')
+            ->innerJoin($this->messageTable . ' t2','t1.id = t2.id AND t2.language_id = :language')
             ->where('t1.category = :category')
             ->params([':category' => $category, ':language' => $language]);
 

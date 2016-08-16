@@ -301,9 +301,6 @@ class I18N extends \yii\i18n\I18N
         $messageSource = $this->getMessageSource($category);
         $translation = $messageSource->translate($category, $message, $language);
 
-        //\yii\helpers\VarDumper::dump($translation, 10, true);
-
-
         $mod = ArrayHelper::remove($params, 'dot');
 
         if (isset($params['br'])) {
