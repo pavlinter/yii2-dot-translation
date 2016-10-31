@@ -17,7 +17,7 @@ use yii\i18n\MissingTranslationEvent;
  */
 class DbMessageSource extends \yii\i18n\DbMessageSource
 {
-    public $autoInsert = false;
+    public $autoInsert = true;
 
     public $dotMode;
 
