@@ -47,6 +47,23 @@ class DbMessageSource extends \yii\i18n\DbMessageSource
                         ])->execute();
                         $id = $this->db->lastInsertID;
                     }
+                    /* @var $i18n I18N */
+                    $i18n = Yii::$app->i18n;
+                    $languages = $i18n->getLanguages();
+                    foreach ($languages as $language_id => $language) {
+                        $query = new Query();
+                        $exists = $query->from($this->messageTable)->where([
+                            'id' => $id,
+                            'language_id' => $language_id,
+                        ])->exists($this->db);
+                        if (!$exists) {
+                            $this->db->createCommand()->insert($this->messageTable,[
+                                'id' => $id,
+                                'language_id' => $language_id,
+                                'translation'  => '',
+                            ])->execute();
+                        }
+                    }
                     $this->messagesId[$event->message] = $id;
                 }
                 $event->translatedMessage = $event->message;
