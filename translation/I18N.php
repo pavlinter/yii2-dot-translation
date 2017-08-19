@@ -544,7 +544,7 @@ class I18N extends \yii\i18n\I18N
                 loading : "' . Yii::t("i18n-dot", "Loading...", ['dot' => false]) . '"
             };
             var dotCategoryUrl = "' . Url::to($this->categoryUrl) . '";
-            var langCode = "' . $this->language['code'] . '";
+            var langCode = "' . $this->language[$this->langColCode] . '";
 
             jQuery("#dot-translation-form button").on("click", function () {
 
