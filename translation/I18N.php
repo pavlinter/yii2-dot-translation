@@ -574,7 +574,9 @@ class I18N extends \yii\i18n\I18N
                         if (params) {
                             var o = jQuery.parseJSON(params);
                             for (m in o) {
-                                val = val.replace("{" + m + "}",o[m]);
+                                if(val !== null){
+                                    val = val.replace("{" + m + "}",o[m]);
+                                }
                             }
                         }
                         $dot.prev(".text-' . $this->dotClass . '").html(val);
