@@ -3,7 +3,7 @@
 /**
  * @copyright Copyright &copy; Pavels Radajevs, 2015
  * @package yii2-dot-translation
- * @version 2.0.3
+ * @version 2.1.0
  */
 
 namespace pavlinter\translation;
@@ -34,7 +34,7 @@ class DbMessageSource extends \yii\i18n\DbMessageSource
         parent::init();
         if ($this->autoInsert) {
             $this->on(static::EVENT_MISSING_TRANSLATION,function($event){
-                if (!isset($this->messagesId[$event->message])) {
+                if (!$this->issetId($event->category, $event->message)) {
                     $query = new Query();
                     $id = $query->select("id")->from($this->sourceMessageTable)->where([
                         'category' => $event->category,
@@ -64,7 +64,7 @@ class DbMessageSource extends \yii\i18n\DbMessageSource
                             ])->execute();
                         }
                     }
-                    $this->messagesId[$event->message] = $id;
+                    $this->addMessageId($event->category, $event->message, $id);
                 }
                 $event->translatedMessage = $event->message;
             });
@@ -142,7 +142,7 @@ class DbMessageSource extends \yii\i18n\DbMessageSource
         $result = [];
         foreach ($messages as $message) {
             $result[$message['message']] = $message['translation'];
-            $this->messagesId[$message['message']] = $message['id'];
+            $this->addMessageId($category, $message['message'], $message['id']);
         }
         
         return $result;
@@ -208,13 +208,40 @@ class DbMessageSource extends \yii\i18n\DbMessageSource
      * @param $message
      * @return bool
      */
-    public function getId($message)
+    public function getId($category, $message)
     {
-        if(isset($this->messagesId[$message]))
+        if(isset($this->messagesId[$this->hashId($category, $message)]))
         {
-            return $this->messagesId[$message];
+            return $this->messagesId[$this->hashId($category, $message)];
         }
         return false;
+    }
+
+    /**
+     * @param $message
+     * @return bool
+     */
+    public function issetId($category, $message)
+    {
+        return isset($this->messagesId[$this->hashId($category, $message)]);
+    }
+
+    /**
+     * @param $message
+     * @return bool
+     */
+    public function addMessageId($category, $message, $id)
+    {
+        $this->messagesId[$this->hashId($category, $message)] = $id;
+    }
+
+    /**
+     * @param $message
+     * @return bool
+     */
+    public function hashId($category, $message)
+    {
+        return md5($category . $message);
     }
 
     /**
